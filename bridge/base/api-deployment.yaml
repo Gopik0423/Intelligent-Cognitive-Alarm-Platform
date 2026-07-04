@@ -1,0 +1,46 @@
+#! api-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: api
+    namespace: intelligent-cognitive-alarm-platform-main
+    labels:
+        com.docker.compose.project: intelligent-cognitive-alarm-platform-main
+        com.docker.compose.service: api
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: intelligent-cognitive-alarm-platform-main
+            com.docker.compose.service: api
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: intelligent-cognitive-alarm-platform-main
+                com.docker.compose.service: api
+                com.docker.compose.network.default: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: api
+                  image: intelligent-cognitive-alarm-platform-main-api
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: DB_HOST
+                      value: "db"
+                    - name: DB_NAME
+                      value: "alarm_platform"
+                    - name: DB_PASSWORD
+                      value: "alarm_password"
+                    - name: DB_PORT
+                      value: "5432"
+                    - name: DB_USER
+                      value: "alarm_user"
+                    - name: PORT
+                      value: "4000"
+                  ports:
+                    - name: api-4000
+                      containerPort: 4000
