@@ -38,8 +38,8 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         )
 
         email = payload.get("sub")
-
-        if email is None:
+        user_id = payload.get("user_id")
+        if email is None or user_id is None:
             raise credentials_exception
 
         return payload
