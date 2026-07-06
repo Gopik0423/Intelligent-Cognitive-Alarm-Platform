@@ -1,0 +1,8 @@
+#! 0-intelligent-cognitive-alarm-platform-main-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: intelligent-cognitive-alarm-platform-main
+    labels:
+        com.docker.compose.project: intelligent-cognitive-alarm-platform-main

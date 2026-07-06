@@ -1,0 +1,19 @@
+#! db-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: db-published
+    namespace: intelligent-cognitive-alarm-platform-main
+    labels:
+        com.docker.compose.project: intelligent-cognitive-alarm-platform-main
+        com.docker.compose.service: db
+spec:
+    selector:
+        com.docker.compose.project: intelligent-cognitive-alarm-platform-main
+        com.docker.compose.service: db
+    ports:
+        - name: db-5432
+          port: 5432
+          protocol: TCP
+          targetPort: db-5432
