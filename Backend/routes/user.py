@@ -28,10 +28,19 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         return {"message": "Email already registered"}
 
+    # Add this block here
+    if user.role == "Admin":
+        admin = db.query(User).filter(User.role == "Admin").first()
+
+        if admin:
+            return {"message": "Admin already exists"}
+
+    # Existing code
     new_user = User(
         name=user.name,
         email=user.email,
-        password=pwd_context.hash(user.password)
+        password=pwd_context.hash(user.password),
+        role=user.role
     )
 
     db.add(new_user)
@@ -97,4 +106,23 @@ def coach_dashboard(payload=Depends(require_role("Wellness Coach"))):
     return {
         "message": "Welcome Wellness Coach",
         "user": payload
+    }
+
+@router.get("/admin/users")
+def get_all_users(
+    payload=Depends(require_role("Admin")),
+    db: Session = Depends(get_db)
+):
+    users = db.query(User).all()
+    return users
+
+@router.get("/admin/stats")
+def admin_stats(
+    payload=Depends(require_role("Admin")),
+    db: Session = Depends(get_db)
+):
+    total_users = db.query(User).count()
+
+    return {
+        "total_users": total_users
     }
