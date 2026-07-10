@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 import random
-from ai_generator import generate_challenge
-from models.performance import Performance
-from database.db import SessionLocal
-from models.challenge import Challenge
-from schemas.challenge import ChallengeCreate, ChallengeAnswer
-from schemas.challenge import StartChallenge
+from Backend.ai_generator import generate_challenge
+from Backend.models.performance import Performance
+from Backend.database.db import SessionLocal
+from Backend.models.challenge import Challenge
+from Backend.schemas.challenge import ChallengeCreate, ChallengeAnswer
+from Backend.schemas.challenge import StartChallenge
 
 router = APIRouter()
 

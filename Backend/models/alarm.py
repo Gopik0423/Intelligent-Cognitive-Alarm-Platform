@@ -10,7 +10,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
-from database.db import Base
+from Backend.database.db import Base
 
 
 class Alarm(Base):
