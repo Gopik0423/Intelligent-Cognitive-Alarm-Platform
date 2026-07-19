@@ -7,7 +7,7 @@ from Backend.database.db import SessionLocal
 from Backend.models.challenge import Challenge
 from Backend.schemas.challenge import ChallengeCreate, ChallengeAnswer
 from Backend.schemas.challenge import StartChallenge
-
+from Backend.scripts.challenge_engine import ChallengeEngine
 router = APIRouter()
 
 
@@ -130,14 +130,15 @@ def start_challenge(
         request.user_id,
         db
     )
+    challenge_type = ChallengeEngine.select_random()
 
     challenge_data = generate_challenge(
-        request.challenge_type,
+        challenge_type,
         difficulty
     )
 
     new_challenge = Challenge(
-        challenge_type=request.challenge_type,
+        challenge_type=challenge_type,
         question=challenge_data["question"],
         correct_answer=challenge_data["correct_answer"],
         difficulty=challenge_data["difficulty"],
