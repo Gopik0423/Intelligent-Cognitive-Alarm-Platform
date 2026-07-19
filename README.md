@@ -5,3 +5,4 @@ tags: []
 ---
 
 # Intelligent-Cognitive-Alarm-Platform
+Backend developed using FastAPI, PostgreSQL, JWT Authentication, RBAC, and Gemini AI for adaptive cognitive challenge generation and performance tracking.
