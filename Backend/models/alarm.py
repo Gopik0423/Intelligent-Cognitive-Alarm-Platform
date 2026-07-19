@@ -9,7 +9,6 @@ from sqlalchemy import (
     ForeignKey,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
 from Backend.database.db import Base
 
 
@@ -24,7 +23,10 @@ class Alarm(Base):
 
     alarm_type = Column(String, default="daily")
 
-    repeat_days = Column(ARRAY(Integer), nullable=True)
+    # SQLite doesn't support ARRAY
+    # Store repeat days as comma-separated string
+    # Example: "1,2,3,4,5"
+    repeat_days = Column(String, nullable=True)
 
     one_time_date = Column(Date, nullable=True)
 
