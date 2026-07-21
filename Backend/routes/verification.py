@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,6 +9,8 @@ from Backend.models.user import User
 from Backend.models.challenge import Challenge
 from Backend.models.verification import WakeupVerification
 from Backend.auth import verify_token
+from Backend.ai_generator import generate_challenge
+from Backend.puzzle_difficulty import calculate_age, difficulty_for_age
 
 router = APIRouter(prefix="/verification", tags=["Wake-up Verification"])
 
@@ -30,14 +31,24 @@ def get_current_user(payload=Depends(verify_token), db: Session = Depends(get_db
     return user
 
 
-def _pick_challenge(db: Session, challenge_type: str = None) -> Challenge:
-    q = db.query(Challenge)
-    if challenge_type:
-        q = q.filter(Challenge.challenge_type == challenge_type)
-    challenges = q.all()
-    if not challenges:
-        raise HTTPException(status_code=404, detail="No challenges available for this type")
-    return random.choice(challenges)
+def _generate_challenge(db: Session, challenge_type: str, difficulty: str, age=None) -> Challenge:
+    """Create and persist one on-demand puzzle for an alarm verification."""
+    puzzle = generate_challenge(challenge_type or "math", difficulty or "Easy", age=age)
+    challenge = Challenge(
+        challenge_type=challenge_type or "math",
+        question=puzzle["question"],
+        correct_answer=puzzle["correct_answer"],
+        difficulty=puzzle["difficulty"],
+        points=puzzle["points"],
+    )
+    db.add(challenge)
+    db.flush()
+    return challenge
+
+
+def _pick_challenge(db: Session, challenge_type: str, difficulty: str, age=None) -> Challenge:
+    """Generate a fresh age-appropriate puzzle for each verification attempt."""
+    return _generate_challenge(db, challenge_type or "math", difficulty, age)
 
 
 @router.post("/start/{alarm_id}")
@@ -46,7 +57,8 @@ def start_verification(alarm_id: int, db: Session = Depends(get_db), current_use
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
 
-    challenge = _pick_challenge(db, alarm.challenge_type)
+    difficulty = difficulty_for_age(current_user.date_of_birth)
+    challenge = _pick_challenge(db, alarm.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
 
     verification = WakeupVerification(
         user_id=current_user.id,
@@ -95,7 +107,8 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
             verification.completed_at = datetime.utcnow()
             db.commit()
             return {"status": "success", "message": "Verified! Alarm can be dismissed."}
-        next_challenge = _pick_challenge(db, verification.challenge_type)
+        difficulty = difficulty_for_age(current_user.date_of_birth)
+        next_challenge = _pick_challenge(db, verification.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
         verification.challenge_id = str(next_challenge.id)
         verification.current_question = next_challenge.question
         db.commit()
@@ -108,7 +121,8 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
         db.commit()
         return {"status": "failed", "message": "Verification failed. Alarm will re-trigger."}
 
-    next_challenge = _pick_challenge(db, verification.challenge_type)
+    difficulty = difficulty_for_age(current_user.date_of_birth)
+    next_challenge = _pick_challenge(db, verification.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
     verification.challenge_id = str(next_challenge.id)
     verification.current_question = next_challenge.question
     db.commit()

@@ -23,6 +23,16 @@ Challenge.metadata.create_all(bind=engine)
 Performance.metadata.create_all(bind=engine)
 WakeupVerification.metadata.create_all(bind=engine)
 
+# `create_all` does not add columns to existing databases. Keep databases made
+# with the earlier user schema compatible with the new date-of-birth field.
+from sqlalchemy import inspect, text
+
+if "users" in inspect(engine).get_table_names():
+    user_columns = {column["name"] for column in inspect(engine).get_columns("users")}
+    if "date_of_birth" not in user_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE users ADD COLUMN date_of_birth DATE"))
+
 app = FastAPI()
 
 app.include_router(user.router)

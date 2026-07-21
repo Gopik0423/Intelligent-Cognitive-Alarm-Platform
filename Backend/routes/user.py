@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -11,6 +13,13 @@ from Backend.auth import create_access_token, verify_token, require_role
 router = APIRouter()
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+
+def calculate_age(date_of_birth: date) -> int:
+    today = date.today()
+    return today.year - date_of_birth.year - (
+        (today.month, today.day) < (date_of_birth.month, date_of_birth.day)
+    )
 
 
 def get_db():
@@ -41,7 +50,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         name=user.name,
         email=user.email,
         password=pwd_context.hash(user.password),
-        role=user.role
+        role=user.role,
+        date_of_birth=user.date_of_birth,
     )
 
     db.add(new_user)
@@ -50,7 +60,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
     return {
         "message": "User registered successfully",
-        "user": new_user
+        "user": new_user,
+        "age": calculate_age(new_user.date_of_birth),
     }
 
 
