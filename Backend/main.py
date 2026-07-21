@@ -1,7 +1,7 @@
 ﻿from fastapi import FastAPI
 from Backend.database.db import engine
 
-from Backend.routes import user, alarm, profile, sleep, wake_goal, habit, challenge, performance, verification
+from Backend.routes import user, alarm, profile, sleep, wake_goal, habit, challenge, performance, verification, analytics, recommendation
 
 from Backend.models.user import User
 from Backend.models.alarm import Alarm
@@ -12,6 +12,8 @@ from Backend.models.habit import Habit
 from Backend.models.challenge import Challenge
 from Backend.models.performance import Performance
 from Backend.models.verification import WakeupVerification
+from Backend.models.analytics import Analytics
+from Backend.routes import recommendation
 
 User.metadata.create_all(bind=engine)
 Alarm.metadata.create_all(bind=engine)
@@ -22,6 +24,7 @@ Habit.metadata.create_all(bind=engine)
 Challenge.metadata.create_all(bind=engine)
 Performance.metadata.create_all(bind=engine)
 WakeupVerification.metadata.create_all(bind=engine)
+Analytics.metadata.create_all(bind=engine)
 
 # `create_all` does not add columns to existing databases. Keep databases made
 # with the earlier user schema compatible with the new date-of-birth field.
@@ -44,6 +47,8 @@ app.include_router(habit.router)
 app.include_router(challenge.router)
 app.include_router(performance.router)
 app.include_router(verification.router)
+app.include_router(analytics.router)
+app.include_router(recommendation.router)
 
 @app.get("/")
 def home():
