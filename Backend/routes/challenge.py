@@ -6,10 +6,13 @@ from Backend.ai_generator import generate_challenge
 from Backend.models.user import User
 from Backend.database.db import SessionLocal
 from Backend.models.challenge import Challenge
+from Backend.models.performance import Performance
 from Backend.schemas.challenge import ChallengeCreate, ChallengeAnswer
 from Backend.schemas.challenge import StartChallenge
 from Backend.scripts.challenge_engine import ChallengeEngine
 from Backend.puzzle_difficulty import calculate_age, difficulty_for_age
+from Backend.auth import verify_token
+
 router = APIRouter()
 
 
@@ -20,17 +23,27 @@ def get_db():
     finally:
         db.close()
 
+
+def get_current_user(payload=Depends(verify_token), db: Session = Depends(get_db)) -> User:
+    email = payload.get("sub")
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
 def get_user_puzzle_settings(user_id: int, db: Session) -> tuple[str, int]:
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return difficulty_for_age(user.date_of_birth), calculate_age(user.date_of_birth)
 
+
 @router.post("/challenge")
 def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
     existing_challenge = db.query(Challenge).filter(
-    Challenge.question == challenge.question
-).first()
+        Challenge.question == challenge.question
+    ).first()
 
     if existing_challenge:
         return {"message": "Challenge already exists"}
@@ -59,7 +72,6 @@ def get_random_challenge(
     db: Session = Depends(get_db),
 ):
 
-    # With a user id, always create a fresh puzzle at that user's age level.
     if user_id is not None:
         difficulty, age = get_user_puzzle_settings(user_id, db)
         challenge_data = generate_challenge(challenge_type, difficulty, age=age)
@@ -100,7 +112,8 @@ def get_random_challenge(
 def submit_answer(
     challenge_id: int,
     answer: ChallengeAnswer,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
 
     challenge = db.query(Challenge).filter(
@@ -111,18 +124,16 @@ def submit_answer(
         return {"message": "Challenge not found"}
 
     user_answer = answer.answer.strip().lower()
-
     correct_answer = challenge.correct_answer.strip().lower()
     is_correct = user_answer == correct_answer
 
     new_performance = Performance(
-    user_id=1,
-    challenge_type=challenge.challenge_type,
-    difficulty=challenge.difficulty,
-    completion_time=10,
-    attempts=1,
-    score=challenge.points if is_correct else 0,
-    success=is_correct
+        user_id=current_user.id,
+        challenge_type=challenge.challenge_type,
+        completion_time=10,
+        attempts=1,
+        accuracy=1.0 if is_correct else 0.0,
+        success=is_correct
     )
 
     db.add(new_performance)
@@ -137,6 +148,7 @@ def submit_answer(
         "correct": False,
         "score": 0
     }
+
 
 @router.post("/challenge/start")
 def start_challenge(
