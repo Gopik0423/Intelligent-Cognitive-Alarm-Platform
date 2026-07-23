@@ -4,5 +4,77 @@ tags: []
 
 ---
 
-# Intelligent-Cognitive-Alarm-Platform
-Backend developed using FastAPI, PostgreSQL, JWT Authentication, RBAC, and Gemini AI for adaptive cognitive challenge generation and performance tracking.
+# Intelligent Cognitive Alarm Platform
+
+## Overview
+
+The Intelligent Cognitive Alarm Platform is an AI-powered smart alarm system that helps users wake up on time using cognitive challenges, analytics, and personalized recommendations.
+
+## Features
+
+- JWT Authentication & OAuth2 Login
+- User Profile & Habit Management
+- Smart Alarm Management
+- AI-powered Cognitive Challenges
+- Wake-up Verification
+- Anti-Snooze Mechanism
+- Performance Tracking
+- Analytics
+- Recommendation System
+- Swagger API Documentation
+
+## Tech Stack
+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- JWT Authentication
+- Google Gemini AI
+- Docker
+
+## System Architecture
+
+```text
++---------+
+|  User   |
++----+----+
+     |
+     v
++------------+
+|  Frontend  |
++-----+------+
+      |
+      v
++----------------------+
+|   FastAPI Backend    |
++-----+------+---------+
+      |      |
+      |      |
+      v      v
+ Gemini AI  PostgreSQL
+```
+
+## UML Use Case Diagram
+
+```text
+                +------+
+                | User |
+                +--+---+
+                   |
+   ---------------------------------------
+   |       |       |       |             |
+   v       v       v       v             v
+ Login  Manage  Set Alarm  Solve    View Analytics
+         Profile            Challenge   & Reports
+```
+
+## Project Modules
+
+- Authentication
+- User Management
+- Alarm Management
+- Cognitive Challenge Engine
+- Wake-up Verification
+- Performance Tracking
+- Analytics
+- Recommendation System
