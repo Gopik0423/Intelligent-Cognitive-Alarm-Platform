@@ -1,7 +1,21 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
+from sqlalchemy import inspect, text
+
 from Backend.database.db import engine
 
-from Backend.routes import user, alarm, profile, sleep, wake_goal, habit, challenge, performance, verification, analytics, recommendation
+from Backend.routes import (
+    user,
+    alarm,
+    profile,
+    sleep,
+    wake_goal,
+    habit,
+    challenge,
+    performance,
+    verification,
+    analytics,
+    recommendation,
+)
 
 from Backend.models.user import User
 from Backend.models.alarm import Alarm
@@ -13,7 +27,6 @@ from Backend.models.challenge import Challenge
 from Backend.models.performance import Performance
 from Backend.models.verification import WakeupVerification
 from Backend.models.analytics import Analytics
-from Backend.routes import recommendation
 
 User.metadata.create_all(bind=engine)
 Alarm.metadata.create_all(bind=engine)
@@ -28,13 +41,15 @@ Analytics.metadata.create_all(bind=engine)
 
 # `create_all` does not add columns to existing databases. Keep databases made
 # with the earlier user schema compatible with the new date-of-birth field.
-from sqlalchemy import inspect, text
-
 if "users" in inspect(engine).get_table_names():
-    user_columns = {column["name"] for column in inspect(engine).get_columns("users")}
+    user_columns = {
+        column["name"] for column in inspect(engine).get_columns("users")
+    }
     if "date_of_birth" not in user_columns:
         with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE users ADD COLUMN date_of_birth DATE"))
+            connection.execute(
+                text("ALTER TABLE users ADD COLUMN date_of_birth DATE")
+            )
 
 app = FastAPI()
 
@@ -49,6 +64,7 @@ app.include_router(performance.router)
 app.include_router(verification.router)
 app.include_router(analytics.router)
 app.include_router(recommendation.router)
+
 
 @app.get("/")
 def home():

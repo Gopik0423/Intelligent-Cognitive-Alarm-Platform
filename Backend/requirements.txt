@@ -33,7 +33,3 @@ six==1.17.0
 
 # CLI
 click==8.4.2
-
-# AI puzzle generation
-google-generativeai
-python-dotenv

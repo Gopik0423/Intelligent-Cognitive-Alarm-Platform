@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import random
 from typing import Optional
+
 from Backend.ai_generator import generate_challenge
 from Backend.models.user import User
 from Backend.database.db import SessionLocal
@@ -24,19 +25,29 @@ def get_db():
         db.close()
 
 
-def get_current_user(payload=Depends(verify_token), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    payload=Depends(verify_token),
+    db: Session = Depends(get_db)
+) -> User:
     email = payload.get("sub")
     user = db.query(User).filter(User.email == email).first()
+
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+
     return user
 
 
 def get_user_puzzle_settings(user_id: int, db: Session) -> tuple[str, int]:
     user = db.query(User).filter(User.id == user_id).first()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return difficulty_for_age(user.date_of_birth), calculate_age(user.date_of_birth)
+
+    return (
+        difficulty_for_age(user.date_of_birth),
+        calculate_age(user.date_of_birth),
+    )
 
 
 @router.post("/challenge")
@@ -47,6 +58,7 @@ def create_challenge(challenge: ChallengeCreate, db: Session = Depends(get_db)):
 
     if existing_challenge:
         return {"message": "Challenge already exists"}
+
     new_challenge = Challenge(
         challenge_type=challenge.challenge_type,
         question=challenge.question,
@@ -74,7 +86,13 @@ def get_random_challenge(
 
     if user_id is not None:
         difficulty, age = get_user_puzzle_settings(user_id, db)
-        challenge_data = generate_challenge(challenge_type, difficulty, age=age)
+
+        challenge_data = generate_challenge(
+            challenge_type,
+            difficulty,
+            age=age
+        )
+
         generated_challenge = Challenge(
             challenge_type=challenge_type,
             question=challenge_data["question"],
@@ -82,9 +100,11 @@ def get_random_challenge(
             difficulty=challenge_data["difficulty"],
             points=challenge_data["points"],
         )
+
         db.add(generated_challenge)
         db.commit()
         db.refresh(generated_challenge)
+
         return generated_challenge
 
     challenges = db.query(Challenge).filter(
@@ -93,6 +113,7 @@ def get_random_challenge(
 
     if not challenges:
         challenge_data = generate_challenge(challenge_type, "Easy")
+
         generated_challenge = Challenge(
             challenge_type=challenge_type,
             question=challenge_data["question"],
@@ -100,9 +121,11 @@ def get_random_challenge(
             difficulty=challenge_data["difficulty"],
             points=challenge_data["points"],
         )
+
         db.add(generated_challenge)
         db.commit()
         db.refresh(generated_challenge)
+
         return generated_challenge
 
     return random.choice(challenges)
@@ -138,6 +161,7 @@ def submit_answer(
 
     db.add(new_performance)
     db.commit()
+
     if is_correct:
         return {
             "correct": True,
@@ -160,6 +184,7 @@ def start_challenge(
         request.user_id,
         db
     )
+
     challenge_type = ChallengeEngine.select_random()
 
     challenge_data = generate_challenge(

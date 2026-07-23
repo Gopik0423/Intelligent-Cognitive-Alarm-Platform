@@ -18,14 +18,24 @@ def get_db():
 
 
 @router.post("/performance/log", response_model=PerformanceOut)
-def log_performance(perf: PerformanceCreate, db: Session = Depends(get_db)):
+def log_performance(
+    perf: PerformanceCreate,
+    db: Session = Depends(get_db)
+):
     new = Performance(
         user_id=perf.user_id,
         challenge_type=perf.challenge_type,
+        difficulty=perf.difficulty,
         attempts=perf.attempts,
         accuracy=perf.accuracy,
+        score=perf.score,
         success=perf.success,
         completion_time=perf.completion_time,
+
+        wakeup_consistency=perf.wakeup_consistency,
+        challenge_completion=perf.challenge_completion,
+        snooze_count=perf.snooze_count,
+        sleep_schedule_adherence=perf.sleep_schedule_adherence,
     )
 
     db.add(new)
@@ -36,14 +46,20 @@ def log_performance(perf: PerformanceCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/performance/user/{user_id}", response_model=list[PerformanceOut])
-def get_user_performance(user_id: int, db: Session = Depends(get_db)):
-    records = db.query(Performance).filter(Performance.user_id == user_id).all()
-    return records
+def get_user_performance(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(Performance)
+        .filter(Performance.user_id == user_id)
+        .all()
+    )
 
 
 @router.get("/admin/performance", response_model=list[PerformanceOut])
 def get_all_performance(
     payload=Depends(require_role("Admin")),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     return db.query(Performance).all()
