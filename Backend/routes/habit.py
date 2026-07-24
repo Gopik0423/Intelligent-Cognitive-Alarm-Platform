@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database.dependencies import get_db
-from models.habit import Habit
-from models.user import User
-from schemas.habit import HabitCreate, HabitUpdate
-from auth import verify_token
+from Backend.database.dependencies import get_db
+from Backend.models.habit import Habit
+from Backend.models.user import User
+from Backend.schemas.habit import HabitCreate, HabitUpdate
+from Backend.auth import verify_token
 
 router = APIRouter(prefix="/habit", tags=["Habit"])
 

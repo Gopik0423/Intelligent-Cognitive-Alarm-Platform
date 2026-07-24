@@ -2,14 +2,14 @@ from pydantic import BaseModel, Field
 
 class ProfileCreate(BaseModel):
     full_name: str
-    age: int = Field(..., ge=1, le=120)
+    age: int = Field(..., ge=4, le=120)
     gender: str
     timezone: str
 
 
 class ProfileUpdate(BaseModel):
     full_name: str
-    age:int = Field(..., ge=1, le=120)
+    age:int = Field(..., ge=4, le=120)
     gender: str
     timezone: str
 

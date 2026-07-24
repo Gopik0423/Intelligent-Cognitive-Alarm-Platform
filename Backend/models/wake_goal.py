@@ -1,5 +1,5 @@
 from sqlalchemy import Column,Integer,String,Boolean,ForeignKey,Time
-from database.db import Base
+from Backend.database.db import Base
 
 
 class WakeGoal(Base):

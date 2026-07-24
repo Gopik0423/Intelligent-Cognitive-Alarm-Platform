@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database.dependencies import get_db
-from models.wake_goal import WakeGoal
-from models.user import User
-from schemas.wake_goal import WakeGoalCreate, WakeGoalUpdate
-from auth import verify_token
+from Backend.database.dependencies import get_db
+from Backend.models.wake_goal import WakeGoal
+from Backend.models.user import User
+from Backend.schemas.wake_goal import WakeGoalCreate, WakeGoalUpdate
+from Backend.auth import verify_token
 
 router = APIRouter(prefix="/wake-goal", tags=["Wake Goal"])
 

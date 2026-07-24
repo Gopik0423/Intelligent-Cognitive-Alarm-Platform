@@ -9,7 +9,7 @@ services:
       - db-data:/var/lib/postgresql/data
       - ./sql:/docker-entrypoint-initdb.d
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   api:
     build: .
@@ -24,7 +24,7 @@ services:
       DB_NAME: alarm_platform
       PORT: 4000
     ports:
-      - "4000:4000"
+      - "4001:4000"
 
 volumes:
   db-data:
