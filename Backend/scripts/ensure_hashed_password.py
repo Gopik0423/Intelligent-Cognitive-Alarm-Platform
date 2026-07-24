@@ -1,5 +1,5 @@
-from Backend.database.db import SessionLocal, Base, engine
-from Backend.models.user import User
+from database.db import SessionLocal, Base, engine
+from models.user import User
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")

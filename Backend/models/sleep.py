@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, Time, ForeignKey
-from Backend.database.db import Base
+from database.db import Base
 
 
 class Sleep(Base):

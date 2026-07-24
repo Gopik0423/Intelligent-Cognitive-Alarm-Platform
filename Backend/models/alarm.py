@@ -9,7 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     func,
 )
-from Backend.database.db import Base
+from database.db import Base
 
 
 class Alarm(Base):

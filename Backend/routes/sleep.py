@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from Backend.database.dependencies import get_db
-from Backend.models.sleep import Sleep
-from Backend.models.user import User
-from Backend.schemas.sleep import SleepCreate, SleepUpdate
-from Backend.auth import verify_token
+from database.dependencies import get_db
+from models.sleep import Sleep
+from models.user import User
+from schemas.sleep import SleepCreate, SleepUpdate
+from auth import verify_token
 
 router = APIRouter(prefix="/sleep", tags=["Sleep Schedule"])
 

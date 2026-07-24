@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from Backend.database.db import Base
+from database.db import Base
 
 
 class Habit(Base):

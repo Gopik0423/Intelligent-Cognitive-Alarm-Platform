@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
 
-from Backend.database.db import Base
+from database.db import Base
 
 
 class Performance(Base):

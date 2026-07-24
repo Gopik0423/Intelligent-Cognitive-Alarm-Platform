@@ -20,10 +20,10 @@ Run from the project root:
 import csv
 import os
 
-from Backend.database.db import SessionLocal
-from Backend.models.performance import Performance
-from Backend.models.analytics import Analytics
-from Backend.models.user import User
+from database.db import SessionLocal
+from models.performance import Performance
+from models.analytics import Analytics
+from models.user import User
 
 OUTPUT_DIR = "clean_data_export"
 

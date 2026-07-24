@@ -14,10 +14,10 @@ Run from the project root:
 import random
 from datetime import datetime, timedelta
 
-from Backend.database.db import SessionLocal
-from Backend.models.performance import Performance
-from Backend.models.analytics import Analytics
-from Backend.models.user import User
+from database.db import SessionLocal
+from models.performance import Performance
+from models.analytics import Analytics
+from models.user import User
 
 CHALLENGE_TYPES = ["math", "logic", "memory", "pattern", "riddle"]
 

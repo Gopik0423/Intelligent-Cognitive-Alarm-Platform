@@ -1,10 +1,10 @@
-﻿from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from Backend.auth import require_role
-from Backend.database.db import SessionLocal
-from Backend.models.performance import Performance
-from Backend.schemas.performance import PerformanceCreate, PerformanceOut
+from auth import require_role
+from database.db import SessionLocal
+from models.performance import Performance
+from schemas.performance import PerformanceCreate, PerformanceOut
 
 router = APIRouter()
 

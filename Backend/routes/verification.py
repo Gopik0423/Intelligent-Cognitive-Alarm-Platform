@@ -3,14 +3,14 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from Backend.database.db import SessionLocal
-from Backend.models.alarm import Alarm
-from Backend.models.user import User
-from Backend.models.challenge import Challenge
-from Backend.models.verification import WakeupVerification
-from Backend.auth import verify_token
-from Backend.ai_generator import generate_challenge
-from Backend.puzzle_difficulty import calculate_age, difficulty_for_age
+from database.db import SessionLocal
+from models.alarm import Alarm
+from models.user import User
+from models.challenge import Challenge
+from models.verification import WakeupVerification
+from auth import verify_token
+from ai_generator import generate_challenge
+from puzzle_difficulty import calculate_age, difficulty_for_age
 
 router = APIRouter(prefix="/verification", tags=["Wake-up Verification"])
 

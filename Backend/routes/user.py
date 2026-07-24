@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm
 
-from Backend.database.db import SessionLocal
-from Backend.models.user import User
-from Backend.schemas.user import UserCreate
-from Backend.auth import create_access_token, verify_token, require_role
+from database.db import SessionLocal
+from models.user import User
+from schemas.user import UserCreate
+from auth import create_access_token, verify_token, require_role
 
 router = APIRouter()
 

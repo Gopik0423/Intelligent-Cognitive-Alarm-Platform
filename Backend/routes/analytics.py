@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from Backend.database.db import SessionLocal
-from Backend.models.performance import Performance
-from Backend.services.analytics import generate_analytics
-from Backend.services.habit_score import calculate_habit_score
+from database.db import SessionLocal
+from models.performance import Performance
+from services.analytics import generate_analytics
+from services.habit_score import calculate_habit_score
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 

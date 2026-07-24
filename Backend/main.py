@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from sqlalchemy import inspect, text
 
 from database.db import engine

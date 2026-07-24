@@ -3,11 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from Backend.database.db import SessionLocal
-from Backend.models.alarm import Alarm
-from Backend.models.user import User
-from Backend.schemas.alarm import AlarmCreate, AlarmUpdate, AlarmOut
-from Backend.auth import verify_token
+from database.db import SessionLocal
+from models.alarm import Alarm
+from models.user import User
+from schemas.alarm import AlarmCreate, AlarmUpdate, AlarmOut
+from auth import verify_token
 
 router = APIRouter(prefix="/alarms", tags=["Alarms"])
 
