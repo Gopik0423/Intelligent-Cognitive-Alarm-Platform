@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -71,6 +71,7 @@ def start_verification(alarm_id: int, db: Session = Depends(get_db), current_use
         max_attempts=3,
         consecutive_correct_required=1,
         consecutive_correct_count=0,
+        time_limit_seconds=alarm.challenge_time_limit_seconds or 60,
     )
     db.add(verification)
     db.commit()
@@ -85,6 +86,8 @@ def start_verification(alarm_id: int, db: Session = Depends(get_db), current_use
         "question": verification.current_question,
         "attempts": verification.attempts,
         "max_attempts": verification.max_attempts,
+        "time_limit_seconds": verification.time_limit_seconds,
+        "deadline": verification.started_at + timedelta(seconds=verification.time_limit_seconds),
     }
 
 
@@ -95,6 +98,12 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="Verification session not found")
     if verification.status != "pending":
         raise HTTPException(status_code=400, detail=f"Already ended: {verification.status}")
+    deadline = verification.started_at + timedelta(seconds=verification.time_limit_seconds)
+    if datetime.utcnow() >= deadline:
+        verification.status = "timed_out"
+        verification.completed_at = datetime.utcnow()
+        db.commit()
+        return {"status": "timed_out", "message": "Challenge time expired. Alarm will continue."}
 
     challenge = db.query(Challenge).filter(Challenge.id == int(verification.challenge_id)).first()
     is_correct = challenge and answer.strip().lower() == challenge.correct_answer.strip().lower()
@@ -134,4 +143,11 @@ def get_verification_status(verification_id: int, db: Session = Depends(get_db),
     verification = db.query(WakeupVerification).filter(WakeupVerification.id == verification_id, WakeupVerification.user_id == current_user.id).first()
     if not verification:
         raise HTTPException(status_code=404, detail="Verification session not found")
-    return verification
+    if verification.status == "pending" and datetime.utcnow() >= verification.started_at + timedelta(seconds=verification.time_limit_seconds):
+        verification.status, verification.completed_at = "timed_out", datetime.utcnow()
+        db.commit()
+    remaining = max(0, int((verification.started_at + timedelta(seconds=verification.time_limit_seconds) - datetime.utcnow()).total_seconds()))
+    return {"id": verification.id, "alarm_id": verification.alarm_id, "status": verification.status,
+            "question": verification.current_question, "attempts": verification.attempts,
+            "max_attempts": verification.max_attempts, "time_limit_seconds": verification.time_limit_seconds,
+            "seconds_remaining": remaining}

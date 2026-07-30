@@ -78,3 +78,7 @@ The Intelligent Cognitive Alarm Platform is an AI-powered smart alarm system tha
 - Performance Tracking
 - Analytics
 - Recommendation System
+- Alarm scheduler, anti-snooze workflow, local/FCM notification integration
+
+See [the alarm user guide](ALARM_USER_GUIDE.md) for the end-to-end trigger, challenge, snooze, and Firebase setup flow.
+Use the [final demo runbook](FINAL_DEMO.md) for the presentation sequence.

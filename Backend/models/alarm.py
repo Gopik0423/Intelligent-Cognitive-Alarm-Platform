@@ -38,6 +38,7 @@ class Alarm(Base):
 
     challenge_type = Column(String, default="math")
     difficulty = Column(String, default="easy")
+    challenge_time_limit_seconds = Column(Integer, default=60, nullable=False)
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

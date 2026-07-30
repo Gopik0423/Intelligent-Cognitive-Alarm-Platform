@@ -1,3 +1,6 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from sqlalchemy import inspect, text
 
@@ -29,6 +32,11 @@ from models.verification import WakeupVerification
 from models.analytics import Analytics
 from models.difficulty import DifficultyLevel
 from models.habit_score import HabitScore
+from models.alarm_event import AlarmEvent
+from models.device_token import DeviceToken
+from models.notification_log import NotificationLog
+from database.db import SessionLocal
+from services.alarm_runtime import process_due_alarms
 
 User.metadata.create_all(bind=engine)
 Alarm.metadata.create_all(bind=engine)
@@ -42,6 +50,9 @@ WakeupVerification.metadata.create_all(bind=engine)
 Analytics.metadata.create_all(bind=engine)
 DifficultyLevel.metadata.create_all(bind=engine)
 HabitScore.metadata.create_all(bind=engine)
+AlarmEvent.metadata.create_all(bind=engine)
+DeviceToken.metadata.create_all(bind=engine)
+NotificationLog.metadata.create_all(bind=engine)
 
 if "users" in inspect(engine).get_table_names():
     user_columns = {
@@ -53,7 +64,33 @@ if "users" in inspect(engine).get_table_names():
                 text("ALTER TABLE users ADD COLUMN date_of_birth DATE")
             )
 
-app = FastAPI()
+if "alarms" in inspect(engine).get_table_names():
+    alarm_columns = {column["name"] for column in inspect(engine).get_columns("alarms")}
+    if "challenge_time_limit_seconds" not in alarm_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE alarms ADD COLUMN challenge_time_limit_seconds INTEGER NOT NULL DEFAULT 60"))
+
+async def alarm_scheduler():
+    """Poll once a minute; each database event makes processing idempotent."""
+    while True:
+        db = SessionLocal()
+        try:
+            process_due_alarms(db)
+        finally:
+            db.close()
+        await asyncio.sleep(30)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(alarm_scheduler())
+    yield
+    task.cancel()
+    with suppress(asyncio.CancelledError):
+        await task
+
+
+app = FastAPI(title="Intelligent Cognitive Alarm Platform", lifespan=lifespan)
 app.include_router(user.router)
 app.include_router(alarm.router)
 app.include_router(profile.router)
