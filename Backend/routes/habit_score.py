@@ -4,25 +4,9 @@ from sqlalchemy.orm import Session
 from database.dependencies import get_db
 from models.habit_score import HabitScore
 from schemas.habit_score import HabitScoreResponse, HabitScoreUpdateRequest, HabitMetrics
+from services.habit_score import calculate_habit_score
 
 router = APIRouter(prefix="/habit-score", tags=["Habit Score"])
-
-WEIGHTS = {
-    "wake_up_consistency": 0.35,
-    "challenge_completion": 0.25,
-    "snooze_reduction": 0.20,
-    "sleep_schedule_adherence": 0.20,
-}
-
-
-def calculate_habit_score(metrics: HabitMetrics) -> float:
-    score = (
-        metrics.wake_up_consistency * WEIGHTS["wake_up_consistency"]
-        + metrics.challenge_completion * WEIGHTS["challenge_completion"]
-        + metrics.snooze_reduction * WEIGHTS["snooze_reduction"]
-        + metrics.sleep_schedule_adherence * WEIGHTS["sleep_schedule_adherence"]
-    )
-    return round(score, 2)
 
 
 @router.get("", response_model=HabitScoreResponse)
@@ -49,7 +33,15 @@ def update_habit_score(payload: HabitScoreUpdateRequest, db: Session = Depends(g
     record.challenge_completion = metrics.challenge_completion
     record.snooze_reduction = metrics.snooze_reduction
     record.sleep_schedule_adherence = metrics.sleep_schedule_adherence
-    record.habit_score = calculate_habit_score(metrics)
+
+    # Single source of truth for the weighted formula now lives in
+    # services/habit_score.py (also used by routes/analytics.py).
+    record.habit_score = calculate_habit_score(
+        wakeup_consistency=metrics.wake_up_consistency,
+        challenge_completion=metrics.challenge_completion,
+        snooze_reduction=metrics.snooze_reduction,
+        sleep_schedule_adherence=metrics.sleep_schedule_adherence,
+    )
 
     db.commit()
     db.refresh(record)

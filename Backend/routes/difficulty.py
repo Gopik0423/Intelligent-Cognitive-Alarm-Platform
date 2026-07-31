@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database.dependencies import get_db
 from models.difficulty import DifficultyLevel
 from schemas.difficulty import DifficultyResponse, DifficultyUpdateRequest
+from services.adaptive_engine import apply_result, set_level
 
 router = APIRouter(prefix="/difficulty", tags=["Difficulty"])
 
@@ -32,21 +33,11 @@ def update_difficulty(payload: DifficultyUpdateRequest, db: Session = Depends(ge
     record = _get_or_create(db, payload.user_id)
 
     if payload.action == "set":
-        record.difficulty_level = payload.level
-        record.correct_streak = 0
-        record.fail_streak = 0
+        set_level(record, payload.level)
     elif payload.action == "correct":
-        record.correct_streak += 1
-        record.fail_streak = 0
-        if record.correct_streak >= 3 and record.difficulty_level < 4:
-            record.difficulty_level += 1
-            record.correct_streak = 0
+        apply_result(record, is_correct=True)
     elif payload.action == "fail":
-        record.fail_streak += 1
-        record.correct_streak = 0
-        if record.fail_streak >= 2 and record.difficulty_level > 1:
-            record.difficulty_level -= 1
-            record.fail_streak = 0
+        apply_result(record, is_correct=False)
 
     db.commit()
     db.refresh(record)

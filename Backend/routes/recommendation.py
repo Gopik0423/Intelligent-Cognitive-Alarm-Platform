@@ -8,6 +8,7 @@ from models.sleep import Sleep
 from models.verification import WakeupVerification
 from models.performance import Performance
 from models.habit import Habit
+from models.habit_score import HabitScore
 
 router = APIRouter(
     prefix="/recommendation",
@@ -67,7 +68,7 @@ def get_wakeup_recommendations(user_id: int, db: Session) -> list[str]:
         if fail_rate > 0.4:
             tips.append("You're failing wake-up verification often. Try an easier challenge type in your alarm settings.")
         elif fail_rate == 0:
-            tips.append("Great job — you're passing wake-up verification consistently!")
+            tips.append("Great job - you're passing wake-up verification consistently!")
 
     recent_analytics = (
         db.query(Analytics)
@@ -120,22 +121,38 @@ def get_productivity_recommendations(user_id: int, db: Session) -> list[str]:
 
 
 def get_habit_recommendations(user_id: int, db: Session) -> list[str]:
+    tips = []
+
     habit = db.query(Habit).filter(Habit.user_id == user_id).first()
 
-    if not habit:
-        return ["No habit set yet. Add a habit to track your progress."]
-
-    tips = []
-    ptype = (habit.productivity_type or "").lower()
-
-    if ptype == "exercise":
-        tips.append(f"Keep building your '{habit.habit_name}' habit — a consistent wake-up time makes morning exercise easier to sustain.")
-    elif ptype in ("study", "learning"):
-        tips.append(f"For your '{habit.habit_name}' habit, try tackling it right after a successful wake-up verification, while your mind is freshest.")
-    elif ptype == "mindfulness":
-        tips.append(f"Pair your '{habit.habit_name}' habit with your morning wake-up routine for consistency.")
+    if habit:
+        ptype = (habit.productivity_type or "").lower()
+        if ptype == "exercise":
+            tips.append(f"Keep building your '{habit.habit_name}' habit - a consistent wake-up time makes morning exercise easier to sustain.")
+        elif ptype in ("study", "learning"):
+            tips.append(f"For your '{habit.habit_name}' habit, try tackling it right after a successful wake-up verification, while your mind is freshest.")
+        elif ptype == "mindfulness":
+            tips.append(f"Pair your '{habit.habit_name}' habit with your morning wake-up routine for consistency.")
+        else:
+            tips.append(f"Stay consistent with your '{habit.habit_name}' habit - small daily progress adds up.")
     else:
-        tips.append(f"Stay consistent with your '{habit.habit_name}' habit — small daily progress adds up.")
+        tips.append("No habit set yet. Add a habit to track your progress.")
+
+    # Reconnected to the consolidated Habit Score engine: identify which of
+    # the 4 weighted factors is dragging the score down most, and give a
+    # specific, targeted tip about that one factor.
+    score_record = db.query(HabitScore).filter(HabitScore.user_id == user_id).first()
+    if score_record:
+        factors = {
+            "wake-up consistency": (score_record.wake_up_consistency, "Try keeping a fixed alarm time - wake-up consistency carries the most weight (35%) in your habit score."),
+            "challenge completion": (score_record.challenge_completion, "Completing more wake-up challenges is currently your fastest lever to raise your habit score (25% weight)."),
+            "snooze reduction": (score_record.snooze_reduction, "Cutting back on snoozing would meaningfully boost your habit score (20% weight)."),
+            "sleep schedule adherence": (score_record.sleep_schedule_adherence, "Sticking closer to your planned sleep schedule would improve your habit score (20% weight)."),
+        }
+        weakest_factor, (weakest_value, weakest_tip) = min(factors.items(), key=lambda item: item[1][0])
+        tips.append(
+            f"Your overall habit score is {score_record.habit_score:.1f}. {weakest_tip}"
+        )
 
     verifications = (
         db.query(WakeupVerification)

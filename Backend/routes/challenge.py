@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from services.challenge_selector import select_challenge
+from services.answer_validation import validate_answer
 import random
 from typing import Optional
 
@@ -83,8 +85,11 @@ def get_random_challenge(
     user_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-
     if user_id is not None:
+        selected = select_challenge(db, user_id=user_id, challenge_type=challenge_type)
+        if selected is not None:
+            return selected
+
         difficulty, age = get_user_puzzle_settings(user_id, db)
 
         challenge_data = generate_challenge(
@@ -146,9 +151,7 @@ def submit_answer(
     if not challenge:
         return {"message": "Challenge not found"}
 
-    user_answer = answer.answer.strip().lower()
-    correct_answer = challenge.correct_answer.strip().lower()
-    is_correct = user_answer == correct_answer
+    is_correct = validate_answer(answer.answer, challenge.correct_answer)
 
     new_performance = Performance(
         user_id=current_user.id,
