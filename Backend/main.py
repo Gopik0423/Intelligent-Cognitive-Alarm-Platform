@@ -19,6 +19,7 @@ from routes import (
     recommendation,
     difficulty,
     habit_score,
+    reports,
 )
 from models.user import User
 from models.alarm import Alarm
@@ -104,6 +105,7 @@ app.include_router(analytics.router)
 app.include_router(recommendation.router)
 app.include_router(difficulty.router)
 app.include_router(habit_score.router)
+app.include_router(reports.router)
 
 @app.get("/")
 def home():
