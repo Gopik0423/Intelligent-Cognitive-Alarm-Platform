@@ -50,11 +50,14 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 
 def require_role(required_role: str):
     def role_checker(payload=Depends(verify_token)):
-        if payload.get("role") != required_role:
+        user_role = payload.get("role", "")
+
+        if user_role.lower() != required_role.lower():
             raise HTTPException(
                 status_code=403,
                 detail="Access Denied"
             )
+
         return payload
 
     return role_checker

@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-
-from database.db import SessionLocal
-from models.analytics import Analytics
-from models.sleep import Sleep
-from models.verification import WakeupVerification
-from models.performance import Performance
-from models.habit import Habit
-from models.habit_score import HabitScore
-
+from Backend.database.db import SessionLocal
+from Backend.models.analytics import Analytics
+from Backend.models.sleep import Sleep
+from Backend.models.verification import WakeupVerification
+from Backend.models.performance import Performance
+from Backend.models.habit import Habit
+from Backend.models.habit_score import HabitScore
+from Backend.models.user import User
+from Backend.puzzle_difficulty import difficulty_for_age
 router = APIRouter(
     prefix="/recommendation",
     tags=["Recommendation"]
@@ -175,27 +175,31 @@ def get_recommendation(
     db: Session = Depends(get_db)
 ):
 
-    latest = (
-        db.query(Analytics)
-        .filter(Analytics.user_id == user_id)
-        .order_by(Analytics.id.desc())
-        .first()
+    records = (
+        db.query(Performance)
+        .filter(Performance.user_id == user_id)
+        .all()
     )
 
-    if latest is None:
-        return {
-            "message": "No analytics found"
-        }
+    if not records:
+        return {"message": "No performance data found"}
+
+    avg_score = sum(r.score for r in records) / len(records)
+    avg_time = sum(r.completion_time for r in records) / len(records)
+    success_rate = (
+        sum(1 for r in records if r.success) / len(records)
+    ) * 100
+    avg_snooze = sum((r.snooze_count or 0) for r in records) / len(records)
 
     recommendations = []
 
-    if latest.snooze_count >= 3:
+    if avg_snooze >= 3:
         recommendations.append("Reduce snoozing.")
 
-    if latest.completion_time > 30:
+    if avg_time > 30:
         recommendations.append("Try easier challenges.")
 
-    if latest.success:
+    if success_rate >= 80:
         recommendations.append("Excellent consistency! Keep it up.")
 
     if not recommendations:
@@ -219,3 +223,47 @@ def get_full_recommendation(
         "productivity": get_productivity_recommendations(user_id, db),
         "habit": get_habit_recommendations(user_id, db),
     }
+def calculate_next_difficulty(user_id: int, db: Session) -> str:
+    """
+    Calculates the next difficulty using BOTH age and recent performance.
+    """
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        return "Easy"
+
+    # Base difficulty from age
+    base = difficulty_for_age(user.date_of_birth)
+
+    performances = (
+        db.query(Performance)
+        .filter(Performance.user_id == user_id)
+        .order_by(Performance.completed_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    # New user → only age is used
+    if not performances:
+        return "Easy"
+
+    avg_accuracy = sum(p.accuracy for p in performances) / len(performances)
+    avg_time = sum(p.completion_time for p in performances) / len(performances)
+
+    levels = ["Easy", "Medium", "Hard"]
+
+    if base not in levels:
+        base = "Medium"
+
+    index = levels.index(base)
+
+    # Promote
+    if avg_accuracy >= 0.90 and avg_time <= 20:
+        index = min(index + 1, 2)
+
+    # Demote
+    elif avg_accuracy < 0.60:
+        index = max(index - 1, 0)
+
+    return levels[index]

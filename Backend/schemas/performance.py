@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+from typing import Optional
 
 
 class PerformanceCreate(BaseModel):
@@ -12,16 +13,15 @@ class PerformanceCreate(BaseModel):
     success: bool
     completion_time: float
 
-    # Week 3 Metrics
-    wakeup_consistency: float
-    challenge_completion: float
-    snooze_count: int
-    sleep_schedule_adherence: float
+    wakeup_consistency: Optional[float] = None
+    challenge_completion: Optional[float] = None
+    snooze_count: Optional[int] = None
+    sleep_schedule_adherence: Optional[float] = None
 
 
 class PerformanceOut(PerformanceCreate):
     id: int
+    difficulty: Optional[str] = None
     completed_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

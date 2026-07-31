@@ -5,16 +5,17 @@ from services.answer_validation import validate_answer
 import random
 from typing import Optional
 
-from ai_generator import generate_challenge
-from models.user import User
-from database.db import SessionLocal
-from models.challenge import Challenge
-from models.performance import Performance
-from schemas.challenge import ChallengeCreate, ChallengeAnswer
-from schemas.challenge import StartChallenge
-from scripts.challenge_engine import ChallengeEngine
-from puzzle_difficulty import calculate_age, difficulty_for_age
-from auth import verify_token
+from Backend.ai_generator import generate_challenge
+from Backend.models.user import User
+from Backend.database.db import SessionLocal
+from Backend.models.challenge import Challenge
+from Backend.models.performance import Performance
+from Backend.schemas.challenge import ChallengeCreate, ChallengeAnswer
+from Backend.schemas.challenge import StartChallenge
+from Backend.scripts.challenge_engine import ChallengeEngine
+from Backend.puzzle_difficulty import calculate_age, difficulty_for_age
+from Backend.routes.recommendation import calculate_next_difficulty
+from Backend.auth import verify_token
 
 router = APIRouter()
 
@@ -156,11 +157,13 @@ def submit_answer(
     new_performance = Performance(
         user_id=current_user.id,
         challenge_type=challenge.challenge_type,
-        completion_time=10,
+        difficulty=challenge.difficulty,
         attempts=1,
         accuracy=1.0 if is_correct else 0.0,
-        success=is_correct
-    )
+        score=challenge.points if is_correct else 0,
+        success=is_correct,
+        completion_time=10,
+)
 
     db.add(new_performance)
     db.commit()
@@ -183,11 +186,14 @@ def start_challenge(
     db: Session = Depends(get_db)
 ):
 
-    difficulty, age = get_user_puzzle_settings(
-        request.user_id,
-        db
-    )
+    user = db.query(User).filter(User.id == request.user_id).first()
 
+    difficulty = calculate_next_difficulty(
+    request.user_id,
+    db
+)
+
+    age = calculate_age(user.date_of_birth)
     challenge_type = ChallengeEngine.select_random()
 
     challenge_data = generate_challenge(

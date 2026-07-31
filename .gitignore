@@ -1,7 +1,6 @@
-﻿__pycache__/\n*.pyc\ntest.db\n
 __pycache__/
 *.pyc
 *.db
 .env
-venv/ 
-venv/ 
+venv/
+.DS_Store

@@ -25,7 +25,7 @@ def log_performance(
     new = Performance(
         user_id=perf.user_id,
         challenge_type=perf.challenge_type,
-        difficulty=perf.difficulty,
+        difficulty="Easy",
         attempts=perf.attempts,
         accuracy=perf.accuracy,
         score=perf.score,

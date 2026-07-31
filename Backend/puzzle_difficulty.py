@@ -10,10 +10,13 @@ def calculate_age(date_of_birth: date) -> int:
 
 
 def difficulty_for_age(date_of_birth: date) -> str:
-    """Choose a puzzle level suitable for the user's age group."""
     age = calculate_age(date_of_birth)
-    if age <= 7 or age >= 80:
+
+    if age <= 7:
         return "Easy"
-    if age <= 12 or age >= 65:
+    elif age <= 12:
+        return "Easy"
+    elif age <= 17:
         return "Medium"
-    return "Hard"
+    else:
+        return "Easy"

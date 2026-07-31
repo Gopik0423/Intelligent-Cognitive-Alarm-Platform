@@ -39,8 +39,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         return {"message": "Email already registered"}
 
     # Add this block here
-    if user.role == "Admin":
-        admin = db.query(User).filter(User.role == "Admin").first()
+    if user.role == "admin":
+        admin = db.query(User).filter(User.role == "admin").first()
 
         if admin:
             return {"message": "Admin already exists"}
@@ -50,7 +50,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         name=user.name,
         email=user.email,
         password=pwd_context.hash(user.password),
-        role=user.role,
+        role=user.role.lower(),
         date_of_birth=user.date_of_birth,
     )
 
@@ -100,7 +100,7 @@ def profile(payload=Depends(verify_token)):
 
 
 @router.get("/user")
-def user_dashboard(payload=Depends(require_role("User"))):
+def user_dashboard(payload=Depends(require_role("user"))):
     return {
         "message": "Welcome User",
         "user": payload
@@ -108,7 +108,7 @@ def user_dashboard(payload=Depends(require_role("User"))):
 
 
 @router.get("/admin")
-def admin_dashboard(payload=Depends(require_role("Admin"))):
+def admin_dashboard(payload=Depends(require_role("admin"))):
     return {
         "message": "Welcome Admin",
         "user": payload
@@ -116,7 +116,7 @@ def admin_dashboard(payload=Depends(require_role("Admin"))):
 
 
 @router.get("/coach")
-def coach_dashboard(payload=Depends(require_role("Wellness Coach"))):
+def coach_dashboard(payload=Depends(require_role("coach"))):
     return {
         "message": "Welcome Wellness Coach",
         "user": payload
