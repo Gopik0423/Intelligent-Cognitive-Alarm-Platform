@@ -1,30 +1,69 @@
-services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./sql:/docker-entrypoint-initdb.d
-    ports:
-      - "5433:5432"
+version: '3.8'
 
-  api:
+services:
+  web:
     build: .
-    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://app_user:app_password@db:5432/app_db
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
+      - redis
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15-alpine
+    restart: always
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: alarm_user
-      DB_PASSWORD: alarm_password
-      DB_NAME: alarm_platform
-      PORT: 4000
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+      POSTGRES_DB: app_db
     ports:
-      - "4001:4000"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
 
 volumes:
-  db-data:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
