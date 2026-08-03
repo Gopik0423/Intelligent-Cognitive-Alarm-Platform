@@ -1,26 +1,85 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Alarm from "./pages/Alarm";
-import Challenge from "./pages/Challenge";
 import Profile from "./pages/Profile";
-import Navbar from "./components/Navbar";
+import Challenge from "./pages/Challenge";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/alarm" element={<Alarm />} />
-        <Route path="/challenge" element={<Challenge />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-    </BrowserRouter>
-  );
+function App(){
+
+ const token = localStorage.getItem("token");
+ 
+
+ return (
+
+ <Routes>
+
+ <Route path="/" element={<Login/>}/>
+
+ <Route path="/signup" element={<Signup/>}/>
+
+
+ <Route
+ path="/dashboard"
+ element={
+ token ?
+ <>
+ <Navbar/>
+ <Dashboard/>
+ </>
+ :
+ <Navigate to="/"/>
+ }
+ />
+
+
+ <Route
+ path="/alarm"
+ element={
+ token ?
+ <>
+ <Navbar/>
+ <Alarm/>
+ </>
+ :
+ <Navigate to="/"/>
+ }
+ />
+
+
+ <Route
+ path="/challenge"
+ element={
+ token ?
+ <>
+ <Navbar/>
+ <Challenge/>
+ </>
+ :
+ <Navigate to="/"/>
+ }
+ />
+
+
+ <Route
+ path="/profile"
+ element={
+ token ?
+ <>
+ <Navbar/>
+ <Profile/>
+ </>
+ :
+ <Navigate to="/"/>
+ }
+ />
+
+ </Routes>
+
+ )
+
 }
 
 export default App;

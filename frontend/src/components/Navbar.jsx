@@ -1,14 +1,30 @@
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import "./Navbar.css";
 function Navbar() {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
+
   return (
-    <nav style={{ padding: "15px", background: "#1e3a8a" }}>
-      <Link to="/" style={{ color: "white", marginRight: "20px" }}>Login</Link>
-      <Link to="/signup" style={{ color: "white", marginRight: "20px" }}>Signup</Link>
-      <Link to="/dashboard" style={{ color: "white", marginRight: "20px" }}>Dashboard</Link>
-      <Link to="/alarm" style={{ color: "white", marginRight: "20px" }}>Alarm</Link>
-      <Link to="/challenge" style={{ color: "white", marginRight: "20px" }}>Challenge</Link>
-      <Link to="/profile" style={{ color: "white" }}>Profile</Link>
+    <nav className="navbar">
+      <div className="logo">
+        <h2>CampusCare AI</h2>
+      </div>
+
+      <div className="menu">
+        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/alarm">Alarm</Link>
+        <Link to="/challenge">Challenge</Link>
+        <Link to="/profile">Profile</Link>
+
+        <button className="logout-btn" onClick={logout}>
+          Logout
+        </button>
+      </div>
     </nav>
   );
 }
