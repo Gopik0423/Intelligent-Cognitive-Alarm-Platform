@@ -1,12 +1,37 @@
-const API_BASE_URL = "http://localhost:8000";
+import axios from "axios";
 
-export const endpoints = {
-  login: "/login",
-  signup: "/signup",
-  profile: "/profile",
-  alarms: "/alarms",
-  challenges: "/challenges",
-  dashboard: "/dashboard",
-};
 
-export default API_BASE_URL;
+const API = axios.create({
+
+    baseURL: "http://127.0.0.1:8000",
+
+});
+
+
+API.interceptors.request.use(
+
+    (config) => {
+
+        const token = localStorage.getItem("token");
+
+        if(token){
+
+            config.headers.Authorization =
+            `Bearer ${token}`;
+
+        }
+
+        return config;
+
+    },
+
+    (error)=>{
+
+        return Promise.reject(error);
+
+    }
+
+);
+
+
+export default API;

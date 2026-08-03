@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from Backend.database.db import SessionLocal
-from Backend.models.analytics import Analytics
-from Backend.models.sleep import Sleep
-from Backend.models.verification import WakeupVerification
-from Backend.models.performance import Performance
-from Backend.models.habit import Habit
-from Backend.models.habit_score import HabitScore
-from Backend.models.user import User
-from Backend.puzzle_difficulty import difficulty_for_age
+from database.db import SessionLocal
+from models.analytics import Analytics
+from models.sleep import Sleep
+from models.verification import WakeupVerification
+from models.performance import Performance
+from models.habit import Habit
+from models.habit_score import HabitScore
+from models.user import User
+from puzzle_difficulty import difficulty_for_age
 router = APIRouter(
     prefix="/recommendation",
     tags=["Recommendation"]
