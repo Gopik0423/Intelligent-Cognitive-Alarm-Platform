@@ -5,7 +5,7 @@ import API from "../services/api";
 function Login() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ function Login() {
     try {
       // FastAPI OAuth2 expects x-www-form-urlencoded
       const formData = new URLSearchParams();
-      formData.append("username", username);
+      formData.append("username", email);
       formData.append("password", password);
 
       const response = await API.post("/login", formData, {
@@ -40,11 +40,11 @@ localStorage.setItem(
  response.data.access_token
 );
 
+const user = await API.get("/user");
+
 localStorage.setItem(
- "user",
- JSON.stringify({
-   username: username
- })
+  "user",
+  JSON.stringify(user.data)
 );
       alert("Login Successful");
 
@@ -81,13 +81,13 @@ localStorage.setItem(
 
       <form onSubmit={handleLogin}>
 
-        <label>Username</label>
+        <label>Email</label>
 
         <input
           type="text"
-          placeholder="Enter Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           style={{
             width: "100%",
             padding: "10px",
