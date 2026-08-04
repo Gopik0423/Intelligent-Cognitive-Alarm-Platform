@@ -100,10 +100,17 @@ def profile(payload=Depends(verify_token)):
 
 
 @router.get("/user")
-def user_dashboard(payload=Depends(require_role("user"))):
+def user_dashboard(
+    payload=Depends(require_role("user")),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == payload["user_id"]).first()
+
     return {
-        "message": "Welcome User",
-        "user": payload
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role
     }
 
 

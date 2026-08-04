@@ -99,7 +99,7 @@ function Dashboard() {
           <h3>User</h3>
 
           <p>
-            <b>Name:</b> {user.username}
+            <b>Name:</b> {user.name}
           </p>
 
           <p>
