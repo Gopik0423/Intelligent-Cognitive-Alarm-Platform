@@ -10,7 +10,8 @@ from models.challenge import Challenge
 from models.verification import WakeupVerification
 from auth import verify_token
 from ai_generator import generate_challenge
-from puzzle_difficulty import calculate_age, difficulty_for_age
+from puzzle_difficulty import calculate_age
+from services.adaptive_engine import get_effective_difficulty_label, get_or_create_difficulty_record, apply_result
 
 router = APIRouter(prefix="/verification", tags=["Wake-up Verification"])
 
@@ -57,7 +58,10 @@ def start_verification(alarm_id: int, db: Session = Depends(get_db), current_use
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
 
-    difficulty = difficulty_for_age(current_user.date_of_birth)
+    # Reconciled: this now uses the same earned, streak-based difficulty
+    # system as practice challenges and the /difficulty endpoints, instead
+    # of an age-only lookup that ignored a user's actual performance.
+    difficulty = get_effective_difficulty_label(db, current_user)
     challenge = _pick_challenge(db, alarm.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
 
     verification = WakeupVerification(
@@ -109,6 +113,13 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
     is_correct = challenge and answer.strip().lower() == challenge.correct_answer.strip().lower()
     verification.attempts += 1
 
+    # Reconciled: every real answer during an actual alarm now feeds the
+    # same streak-based DifficultyLevel used everywhere else. Previously
+    # this never happened, so a user's earned difficulty level had no
+    # effect on their real alarm at all.
+    difficulty_record = get_or_create_difficulty_record(db, current_user)
+    apply_result(difficulty_record, is_correct=bool(is_correct))
+
     if is_correct:
         verification.consecutive_correct_count += 1
         if verification.consecutive_correct_count >= verification.consecutive_correct_required:
@@ -116,7 +127,7 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
             verification.completed_at = datetime.utcnow()
             db.commit()
             return {"status": "success", "message": "Verified! Alarm can be dismissed."}
-        difficulty = difficulty_for_age(current_user.date_of_birth)
+        difficulty = get_effective_difficulty_label(db, current_user)
         next_challenge = _pick_challenge(db, verification.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
         verification.challenge_id = str(next_challenge.id)
         verification.current_question = next_challenge.question
@@ -130,7 +141,7 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
         db.commit()
         return {"status": "failed", "message": "Verification failed. Alarm will re-trigger."}
 
-    difficulty = difficulty_for_age(current_user.date_of_birth)
+    difficulty = get_effective_difficulty_label(db, current_user)
     next_challenge = _pick_challenge(db, verification.challenge_type, difficulty, calculate_age(current_user.date_of_birth))
     verification.challenge_id = str(next_challenge.id)
     verification.current_question = next_challenge.question

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
 function Signup() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const [formData, setFormData] = useState({
   name: "",
@@ -49,125 +51,100 @@ function Signup() {
   };
 
   return (
-    <div
-      style={{
-        width: "400px",
-        margin: "50px auto",
-        padding: "30px",
-        background: "#ffffff",
-        borderRadius: "10px",
-        boxShadow: "0px 0px 10px gray",
-        textAlign: "center",
-      }}
-    >
-      <h2>CampusCare AI</h2>
+    <div style={{ position: "relative", minHeight: "100vh" }}>
+      <button
+        className="theme-toggle"
+        onClick={toggleTheme}
+        style={{ position: "absolute", top: "24px", right: "24px" }}
+      >
+        {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+      </button>
 
-      <h3>Create Account</h3>
+      <div
+        className="app-card"
+        style={{
+          width: "400px",
+          margin: "0 auto",
+          padding: "36px",
+          position: "relative",
+          top: "50px",
+          textAlign: "center",
+        }}
+      >
+        <h2>Cognitive Alarm</h2>
 
-      <form onSubmit={handleSignup}>
+        <h3 style={{ color: "var(--text-muted)", fontWeight: 500 }}>Create Account</h3>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
+        <form onSubmit={handleSignup}>
 
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
-
-        <input
-            type="date"
-            name="date_of_birth"
-            value={formData.date_of_birth}
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={formData.name}
             onChange={handleChange}
             required
-            style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
+            className="app-input"
+            style={{ marginBottom: "14px" }}
+          />
 
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "20px",
-          }}
-        >
-          <option value="user">User</option>
-          <option value="coach">Coach</option>
-          <option value="admin">Admin</option>
-        </select>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="app-input"
+            style={{ marginBottom: "14px" }}
+          />
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "10px",
-            background: "#1e3a8a",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
-        >
-          {loading ? "Creating Account..." : "Signup"}
-        </button>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="app-input"
+            style={{ marginBottom: "14px" }}
+          />
 
-      </form>
+          <input
+              type="date"
+              name="date_of_birth"
+              value={formData.date_of_birth}
+              onChange={handleChange}
+              required
+              className="app-input"
+              style={{ marginBottom: "14px" }}
+          />
 
-      <br />
+          <button
+            type="submit"
+            disabled={loading}
+            className="app-btn"
+            style={{ width: "100%", padding: "12px", fontSize: "15px" }}
+          >
+            {loading ? "Creating Account..." : "Signup"}
+          </button>
 
-      {message && (
-        <p style={{ color: "red" }}>
-          {message}
+        </form>
+
+        <br />
+
+        {message && (
+          <p style={{ color: "var(--danger)", fontSize: "13px" }}>
+            {message}
+          </p>
+        )}
+
+        <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+          Already have an account?
+          <Link to="/" style={{ color: "var(--primary)", fontWeight: 600 }}> Login</Link>
         </p>
-      )}
 
-      <p>
-        Already have an account?
-        <Link to="/"> Login</Link>
-      </p>
-
+      </div>
     </div>
   );
 }

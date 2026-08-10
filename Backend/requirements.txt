@@ -36,3 +36,18 @@ click==8.4.2
 
 # Optional push notification provider (set FIREBASE_SERVICE_ACCOUNT_FILE to enable)
 firebase-admin==7.1.0
+
+# AI puzzle generation (ai_generator.py) -- previously used but not declared here,
+# which broke `pip install -r requirements.txt` on a fresh machine
+google-generativeai==0.8.6
+python-dotenv==1.2.2
+
+# Data analysis (services/analytics.py, services/behavioral_analytics.py) --
+# same issue: imported but never declared. Pinned to 2.2.2 specifically:
+# newer 3.x releases have been flagged by some Windows endpoint-security
+# software (Device Guard / Application Control) as blocking a compiled
+# pandas DLL on install, which 2.2.2 does not trigger.
+pandas==2.2.2
+
+# Test suite (tests/) -- required to run pytest at all, was undeclared
+pytest==8.3.4
