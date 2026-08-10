@@ -1,5 +1,23 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
+const TREND_ICON = {
+  improving: TrendingUp,
+  declining: TrendingDown,
+  stable: Minus,
+};
+
+function TrendBadge({ value }) {
+  const cls = TREND_ICON[value] ? value : "stable";
+  const Icon = TREND_ICON[value] || Minus;
+  return (
+    <span className={`trend-badge ${cls}`}>
+      <Icon size={13} />
+      {value}
+    </span>
+  );
+}
 
 function Reports() {
   const [report, setReport] = useState(null);
@@ -19,7 +37,11 @@ function Reports() {
   };
 
   if (!report) {
-    return <p style={{ textAlign: "center", marginTop: "40px", color: "var(--text-muted)" }}>Loading...</p>;
+    return (
+      <div className="spinner-wrap">
+        <div className="spinner" />
+      </div>
+    );
   }
 
   const sectionStyle = {
@@ -43,12 +65,21 @@ function Reports() {
 
       <div style={{ ...sectionStyle, background: "var(--accent-blue)" }}>
         <h4>Behavioral Analytics</h4>
-        <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}>Status: {report.behavioral_analytics.status}</p>
+        <p style={{ color: "var(--text-muted)", marginBottom: "8px" }}>Status: {report.behavioral_analytics.status}</p>
         {report.behavioral_analytics.status === "ok" && (
           <>
-            <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}>Snooze trend: {report.behavioral_analytics.snooze_trend}</p>
-            <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}>Accuracy trend: {report.behavioral_analytics.accuracy_trend}</p>
-            <p style={{ color: "var(--text-muted)" }}>Consistency trend: {report.behavioral_analytics.wakeup_consistency_trend}</p>
+            <p style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "var(--text-muted)" }}>Snooze trend:</span>
+              <TrendBadge value={report.behavioral_analytics.snooze_trend} />
+            </p>
+            <p style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "var(--text-muted)" }}>Accuracy trend:</span>
+              <TrendBadge value={report.behavioral_analytics.accuracy_trend} />
+            </p>
+            <p style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "var(--text-muted)" }}>Consistency trend:</span>
+              <TrendBadge value={report.behavioral_analytics.wakeup_consistency_trend} />
+            </p>
           </>
         )}
       </div>

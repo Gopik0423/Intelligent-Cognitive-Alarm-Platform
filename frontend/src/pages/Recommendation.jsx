@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { Moon, AlarmClock, Zap, Heart } from "lucide-react";
 
-function Section({ title, tips, color }) {
+function Section({ title, tips, color, Icon, iconColor }) {
   return (
     <div
       style={{
@@ -12,7 +13,10 @@ function Section({ title, tips, color }) {
         marginBottom: "16px",
       }}
     >
-      <h4 style={{ marginBottom: "10px" }}>{title}</h4>
+      <h4 style={{ marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+        <Icon size={18} color={iconColor} />
+        {title}
+      </h4>
       <ul style={{ color: "var(--text-muted)", paddingLeft: "20px", margin: 0 }}>
         {tips.map((tip, i) => (
           <li key={i} style={{ marginBottom: "4px" }}>{tip}</li>
@@ -40,17 +44,21 @@ function Recommendation() {
   };
 
   if (!data) {
-    return <p style={{ textAlign: "center", marginTop: "40px", color: "var(--text-muted)" }}>Loading...</p>;
+    return (
+      <div className="spinner-wrap">
+        <div className="spinner" />
+      </div>
+    );
   }
 
   return (
     <div style={{ width: "650px", margin: "40px auto" }}>
       <h2>Your Personalized Recommendations</h2>
 
-      <Section title="Sleep" tips={data.sleep} color="var(--accent-blue)" />
-      <Section title="Wake-Up" tips={data.wake_up} color="var(--accent-orange)" />
-      <Section title="Productivity" tips={data.productivity} color="var(--accent-green)" />
-      <Section title="Habit" tips={data.habit} color="var(--accent-purple)" />
+      <Section title="Sleep" tips={data.sleep} color="var(--accent-blue)" Icon={Moon} iconColor="var(--icon-blue)" />
+      <Section title="Wake-Up" tips={data.wake_up} color="var(--accent-orange)" Icon={AlarmClock} iconColor="var(--icon-orange)" />
+      <Section title="Productivity" tips={data.productivity} color="var(--accent-green)" Icon={Zap} iconColor="var(--icon-green)" />
+      <Section title="Habit" tips={data.habit} color="var(--accent-purple)" Icon={Heart} iconColor="var(--icon-purple)" />
     </div>
   );
 }

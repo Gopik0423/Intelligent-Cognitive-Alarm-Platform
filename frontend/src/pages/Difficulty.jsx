@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { Feather, Zap, Flame, AlertTriangle } from "lucide-react";
 
 const LEVEL_LABELS = { 1: "Easy", 2: "Easy", 3: "Medium", 4: "Hard" };
+const SEGMENT_LABELS = ["Easy", "Easy", "Medium", "Hard"];
+
+const TIER_ICON = {
+  Easy: Feather,
+  Medium: Zap,
+  Hard: Flame,
+};
 
 function Difficulty() {
   const [difficulty, setDifficulty] = useState(null);
@@ -22,23 +30,16 @@ function Difficulty() {
     }
   };
 
-  const setLevel = async (level) => {
-    try {
-      await API.post("/difficulty/update", {
-        user_id: userId,
-        action: "set",
-        level: level,
-      });
-      const res = await API.get(`/difficulty/get?user_id=${userId}`);
-      setDifficulty(res.data);
-    } catch (err) {
-      console.log(err.response?.data || err.message);
-    }
-  };
-
   if (!difficulty) {
-    return <p style={{ textAlign: "center", marginTop: "40px", color: "var(--text-muted)" }}>Loading...</p>;
+    return (
+      <div className="spinner-wrap">
+        <div className="spinner" />
+      </div>
+    );
   }
+
+  const tierLabel = LEVEL_LABELS[difficulty.difficulty_level];
+  const TierIcon = TIER_ICON[tierLabel] || Feather;
 
   return (
     <div
@@ -58,40 +59,29 @@ function Difficulty() {
         applies to real alarms too, not just practice puzzles.
       </p>
 
-      <h1 style={{ fontSize: "48px", color: "var(--primary)" }}>
-        {LEVEL_LABELS[difficulty.difficulty_level]}
+      <TierIcon size={42} color="var(--primary)" style={{ marginTop: "12px" }} />
+
+      <h1 style={{ fontSize: "48px", color: "var(--primary)", margin: "8px 0 4px" }}>
+        {tierLabel}
       </h1>
 
-      <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}><b style={{ color: "var(--text)" }}>Level:</b> {difficulty.difficulty_level} / 4</p>
-      <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}><b style={{ color: "var(--text)" }}>Correct streak:</b> {difficulty.correct_streak}</p>
-      <p style={{ color: "var(--text-muted)" }}><b style={{ color: "var(--text)" }}>Fail streak:</b> {difficulty.fail_streak}</p>
-
-      <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "20px 0" }} />
-
-      <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-        Manual override (for testing):
-      </p>
-
-      <div>
+      <div className="level-meter">
         {[1, 2, 3, 4].map((lvl) => (
-          <button
-            key={lvl}
-            onClick={() => setLevel(lvl)}
-            style={{
-              margin: "5px",
-              padding: "9px 16px",
-              background: difficulty.difficulty_level === lvl ? "var(--primary)" : "var(--surface-alt)",
-              color: difficulty.difficulty_level === lvl ? "var(--primary-contrast)" : "var(--text)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            {lvl} - {LEVEL_LABELS[lvl]}
-          </button>
+          <div key={lvl} className="level-segment">
+            <div className={`level-segment-bar ${lvl <= difficulty.difficulty_level ? "filled" : ""}`} />
+            <div className="level-segment-label">{SEGMENT_LABELS[lvl - 1]}</div>
+          </div>
         ))}
       </div>
+
+      <p style={{ color: "var(--text-muted)", marginBottom: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+        <Flame size={16} color="var(--icon-orange)" />
+        <b style={{ color: "var(--text)" }}>Correct streak:</b> {difficulty.correct_streak}
+      </p>
+      <p style={{ color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+        <AlertTriangle size={16} color="var(--danger)" />
+        <b style={{ color: "var(--text)" }}>Fail streak:</b> {difficulty.fail_streak}
+      </p>
     </div>
   );
 }

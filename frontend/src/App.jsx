@@ -16,10 +16,12 @@ import Verify from "./pages/Verify";
 
 function withNav(element, token) {
   return token ? (
-    <>
+    <div className="app-layout">
       <Navbar />
-      {element}
-    </>
+      <div className="main-content">
+        {element}
+      </div>
+    </div>
   ) : (
     <Navigate to="/" />
   );
