@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import AlarmWatcher from "./components/AlarmWatcher";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -21,6 +22,7 @@ function withNav(element, token) {
       <div className="main-content">
         {element}
       </div>
+      <AlarmWatcher />
     </div>
   ) : (
     <Navigate to="/" />
