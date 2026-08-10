@@ -92,7 +92,16 @@ function Verify() {
 
           {feedback && <p style={{ color: "var(--primary)" }}>{feedback}</p>}
 
-          <h1 style={{ margin: "20px 0" }}>{question}</h1>
+          <h1
+            style={{
+              margin: "20px 0",
+              fontSize: "clamp(20px, 4vw, 32px)",
+              lineHeight: "1.4",
+              wordBreak: "break-word",
+            }}
+          >
+            {question}
+          </h1>
 
           <input
             type="text"
