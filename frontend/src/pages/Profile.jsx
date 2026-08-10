@@ -6,12 +6,10 @@ function Profile() {
     full_name: "",
     age: "",
     gender: "",
-    phone: "",
-    sleep_time: "",
-    wake_time: "",
+    timezone: "",
   });
 
-  const token = localStorage.getItem("token");
+  const [exists, setExists] = useState(false);
 
   useEffect(() => {
     getProfile();
@@ -19,126 +17,93 @@ function Profile() {
 
   const getProfile = async () => {
     try {
-      const res = await API.get("http://127.0.0.1:8000/profile/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const res = await API.get("/profile/");
       setProfile(res.data);
+      setExists(true);
     } catch (err) {
-      console.log(err);
+      console.log(err.response?.data || err.message);
+      setExists(false);
     }
   };
 
   const handleChange = (e) => {
-    setProfile({
-      ...profile,
-      [e.target.name]: e.target.value,
-    });
+    setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const updateProfile = async () => {
-    try {
-      await API.put(
-        "http://127.0.0.1:8000/profile/",
-        profile,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  const saveProfile = async () => {
+    const payload = {
+      full_name: profile.full_name,
+      age: Number(profile.age),
+      gender: profile.gender,
+      timezone: profile.timezone,
+    };
 
-      alert("Profile Updated Successfully");
+    try {
+      if (exists) {
+        await API.put("/profile/", payload);
+      } else {
+        await API.post("/profile/", payload);
+        setExists(true);
+      }
+      alert("Profile Saved Successfully");
     } catch (err) {
-      console.log(err);
-      alert("Update Failed");
+      console.log(err.response?.data || err.message);
+      alert("Save Failed");
     }
   };
 
   return (
     <div
+      className="app-card"
       style={{
         width: "500px",
         margin: "40px auto",
-        padding: "25px",
-        borderRadius: "10px",
-        boxShadow: "0px 0px 10px lightgray",
-        background: "#fff",
+        padding: "28px",
       }}
     >
       <h2>User Profile</h2>
 
-      <br />
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginTop: "16px" }}>
+        <input
+          type="text"
+          name="full_name"
+          placeholder="Full Name"
+          value={profile.full_name}
+          onChange={handleChange}
+          className="app-input"
+        />
 
-      <input
-        type="text"
-        name="full_name"
-        placeholder="Full Name"
-        value={profile.full_name}
-        onChange={handleChange}
-      />
+        <input
+          type="number"
+          name="age"
+          placeholder="Age"
+          value={profile.age}
+          onChange={handleChange}
+          className="app-input"
+        />
 
-      <br />
-      <br />
+        <input
+          type="text"
+          name="gender"
+          placeholder="Gender"
+          value={profile.gender}
+          onChange={handleChange}
+          className="app-input"
+        />
 
-      <input
-        type="number"
-        name="age"
-        placeholder="Age"
-        value={profile.age}
-        onChange={handleChange}
-      />
+        <input
+          type="text"
+          name="timezone"
+          placeholder="Timezone (e.g. Asia/Kolkata)"
+          value={profile.timezone}
+          onChange={handleChange}
+          className="app-input"
+        />
 
-      <br />
-      <br />
-
-      <input
-        type="text"
-        name="gender"
-        placeholder="Gender"
-        value={profile.gender}
-        onChange={handleChange}
-      />
-
-      <br />
-      <br />
-
-      <input
-        type="text"
-        name="phone"
-        placeholder="Phone Number"
-        value={profile.phone}
-        onChange={handleChange}
-      />
-
-      <br />
-      <br />
-
-      <input
-        type="time"
-        name="sleep_time"
-        value={profile.sleep_time}
-        onChange={handleChange}
-      />
-
-      <br />
-      <br />
-
-      <input
-        type="time"
-        name="wake_time"
-        value={profile.wake_time}
-        onChange={handleChange}
-      />
-
-      <br />
-      <br />
-
-      <button onClick={updateProfile}>
-        Update Profile
-      </button>
+        <button onClick={saveProfile} className="app-btn" style={{ alignSelf: "flex-start", padding: "11px 24px" }}>
+          {exists ? "Update Profile" : "Create Profile"}
+        </button>
+      </div>
     </div>
   );
 }

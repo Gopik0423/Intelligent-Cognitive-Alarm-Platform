@@ -138,9 +138,6 @@ def get_habit_recommendations(user_id: int, db: Session) -> list[str]:
     else:
         tips.append("No habit set yet. Add a habit to track your progress.")
 
-    # Reconnected to the consolidated Habit Score engine: identify which of
-    # the 4 weighted factors is dragging the score down most, and give a
-    # specific, targeted tip about that one factor.
     score_record = db.query(HabitScore).filter(HabitScore.user_id == user_id).first()
     if score_record:
         factors = {
@@ -223,6 +220,19 @@ def get_full_recommendation(
         "productivity": get_productivity_recommendations(user_id, db),
         "habit": get_habit_recommendations(user_id, db),
     }
+
+
+# NOTE (difficulty-system reconciliation): this function is no longer
+# called from anywhere. It used to be called from routes/challenge.py's
+# start_challenge, but that created a third, disconnected difficulty
+# system alongside the streak-based DifficultyLevel system (routes/
+# difficulty.py) and the age-only lookup that used to run live alarms
+# (routes/verification.py). All three now go through
+# services.adaptive_engine.get_effective_difficulty_label() instead, so a
+# user's earned difficulty level is consistent everywhere, including
+# during a real alarm. Left here rather than deleted, in case anyone
+# still relies on it directly -- flagged to the team for a final decision
+# on whether to remove it.
 def calculate_next_difficulty(user_id: int, db: Session) -> str:
     """
     Calculates the next difficulty using BOTH age and recent performance.
@@ -244,7 +254,7 @@ def calculate_next_difficulty(user_id: int, db: Session) -> str:
         .all()
     )
 
-    # New user → only age is used
+    # New user -> only age is used
     if not performances:
         return "Easy"
 

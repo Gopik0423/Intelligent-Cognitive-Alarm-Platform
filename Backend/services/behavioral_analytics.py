@@ -18,9 +18,11 @@ returns "not_enough_data" rather than guessing.
 
 import pandas as pd
 
-MIN_RECORDS_FOR_TREND = 4
-TREND_THRESHOLD = 5.0  # minimum % point change for percentage-scale metrics (accuracy, consistency)
-SNOOZE_TREND_THRESHOLD = 1.0  # snooze_count is a small raw number (0-6ish), not a percentage -- needs its own scale
+from services.tuning_config import (
+    MIN_RECORDS_FOR_TREND,
+    TREND_THRESHOLD,
+    SNOOZE_TREND_THRESHOLD,
+)
 
 
 def _trend_direction(before_avg: float, after_avg: float, lower_is_better: bool = False, threshold: float = TREND_THRESHOLD) -> str:

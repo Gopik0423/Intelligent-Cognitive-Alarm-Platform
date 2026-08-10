@@ -1,0 +1,126 @@
+:root[data-theme="light"] {
+  --bg: #F4F6FB;
+  --surface: #FFFFFF;
+  --surface-alt: #F0F2F8;
+  --text: #1A1D29;
+  --text-muted: #6B7280;
+  --border: #E2E5EE;
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-contrast: #FFFFFF;
+  --accent-blue: #E0E7FF;
+  --accent-orange: #FEF3E2;
+  --accent-purple: #F3E8FF;
+  --accent-green: #DCFCE7;
+  --accent-pink: #FCE7F3;
+  --success: #16A34A;
+  --danger: #DC2626;
+  --danger-hover: #B91C1C;
+  --shadow: 0 2px 12px rgba(20, 20, 40, 0.06);
+  --shadow-lg: 0 8px 30px rgba(20, 20, 40, 0.10);
+  --radius: 14px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #12131A;
+  --surface: #1B1D28;
+  --surface-alt: #23263353;
+  --text: #EDEFF7;
+  --text-muted: #9CA3AF;
+  --border: #2E3140;
+  --primary: #818CF8;
+  --primary-hover: #6366F1;
+  --primary-contrast: #12131A;
+  --accent-blue: #1E2A4A;
+  --accent-orange: #3A2E1A;
+  --accent-purple: #2E1F42;
+  --accent-green: #163524;
+  --accent-pink: #3A1F2E;
+  --success: #4ADE80;
+  --danger: #F87171;
+  --danger-hover: #EF4444;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.app-input {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.app-input:focus {
+  border-color: var(--primary);
+}
+
+.app-btn {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.app-btn:hover {
+  background: var(--primary-hover);
+}
+.app-btn:active {
+  transform: scale(0.98);
+}
+
+.app-btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+.app-btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.app-btn-secondary {
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.app-btn-secondary:hover {
+  border-color: var(--primary);
+}
+
+.theme-toggle {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}

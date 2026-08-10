@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
+import { useTheme } from "../context/ThemeContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,15 +18,14 @@ function Login() {
 
     setError("");
 
-    if (!username || !password) {
-      setError("Please enter username and password.");
+    if (!email || !password) {
+      setError("Please enter email and password.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // FastAPI OAuth2 expects x-www-form-urlencoded
       const formData = new URLSearchParams();
       formData.append("username", email);
       formData.append("password", password);
@@ -35,20 +36,13 @@ function Login() {
         },
       });
 
-localStorage.setItem(
- "token",
- response.data.access_token
-);
+      localStorage.setItem("token", response.data.access_token);
 
-const user = await API.get("/user");
+      const user = await API.get("/user");
 
-localStorage.setItem(
-  "user",
-  JSON.stringify(user.data)
-);
-      alert("Login Successful");
+      localStorage.setItem("user", JSON.stringify(user.data));
 
-      navigate("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       console.log(err);
 
@@ -63,87 +57,92 @@ localStorage.setItem(
   };
 
   return (
-    <div
-      style={{
-        width: "400px",
-        margin: "60px auto",
-        padding: "30px",
-        borderRadius: "10px",
-        background: "#ffffff",
-        boxShadow: "0px 0px 10px lightgray",
-      }}
-    >
-      <h2 style={{ textAlign: "center" }}>
-        Intelligent Cognitive Alarm Platform
-      </h2>
+    <div style={{ position: "relative", minHeight: "100vh" }}>
+      <button
+        className="theme-toggle"
+        onClick={toggleTheme}
+        style={{ position: "absolute", top: "24px", right: "24px" }}
+      >
+        {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+      </button>
 
-      <h3 style={{ textAlign: "center" }}>Login</h3>
+      <div
+        className="app-card"
+        style={{
+          width: "400px",
+          margin: "0 auto",
+          padding: "36px",
+          position: "relative",
+          top: "60px",
+        }}
+      >
+        <h2 style={{ textAlign: "center", fontSize: "22px" }}>
+          Intelligent Cognitive Alarm Platform
+        </h2>
 
-      <form onSubmit={handleLogin}>
+        <h3 style={{ textAlign: "center", color: "var(--text-muted)", fontWeight: 500 }}>Login</h3>
 
-        <label>Email</label>
+        <form onSubmit={handleLogin}>
 
-        <input
-          type="text"
-          placeholder="Enter Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginTop: "5px",
-            marginBottom: "15px",
-          }}
-        />
+          <label style={{ fontSize: "13px", color: "var(--text-muted)" }}>Email</label>
 
-        <label>Password</label>
+          <input
+            type="text"
+            placeholder="Enter Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="app-input"
+            style={{
+              marginTop: "6px",
+              marginBottom: "16px",
+            }}
+          />
 
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginTop: "5px",
-            marginBottom: "20px",
-          }}
-        />
+          <label style={{ fontSize: "13px", color: "var(--text-muted)" }}>Password</label>
 
-        {error && (
-          <p style={{ color: "red" }}>
-            {error}
-          </p>
-        )}
+          <input
+            type="password"
+            placeholder="Enter Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="app-input"
+            style={{
+              marginTop: "6px",
+              marginBottom: "20px",
+            }}
+          />
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "#1e3a8a",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          {error && (
+            <p style={{ color: "var(--danger)", fontSize: "13px", marginBottom: "12px" }}>
+              {error}
+            </p>
+          )}
 
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="app-btn"
+            style={{
+              width: "100%",
+              padding: "12px",
+              fontSize: "15px",
+            }}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
 
-      <br />
+        </form>
 
-      <p style={{ textAlign: "center" }}>
-        Don't have an account?{" "}
-        <Link to="/signup">
-          Register
-        </Link>
-      </p>
+        <br />
 
+        <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "14px" }}>
+          Don't have an account?{" "}
+          <Link to="/signup" style={{ color: "var(--primary)", fontWeight: 600 }}>
+            Register
+          </Link>
+        </p>
+
+      </div>
     </div>
   );
 }

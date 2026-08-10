@@ -6,80 +6,46 @@ import Dashboard from "./pages/Dashboard";
 import Alarm from "./pages/Alarm";
 import Profile from "./pages/Profile";
 import Challenge from "./pages/Challenge";
+import Sleep from "./pages/Sleep";
+import Habit from "./pages/Habit";
+import Difficulty from "./pages/Difficulty";
+import Recommendation from "./pages/Recommendation";
+import BehaviorAnalytics from "./pages/BehaviorAnalytics";
+import Reports from "./pages/Reports";
+import Verify from "./pages/Verify";
 
-function App(){
+function withNav(element, token) {
+  return token ? (
+    <>
+      <Navbar />
+      {element}
+    </>
+  ) : (
+    <Navigate to="/" />
+  );
+}
 
- const token = localStorage.getItem("token");
- 
+function App() {
 
- return (
+  const token = localStorage.getItem("token");
 
- <Routes>
-
- <Route path="/" element={<Login/>}/>
-
- <Route path="/signup" element={<Signup/>}/>
-
-
- <Route
- path="/dashboard"
- element={
- token ?
- <>
- <Navbar/>
- <Dashboard/>
- </>
- :
- <Navigate to="/"/>
- }
- />
-
-
- <Route
- path="/alarm"
- element={
- token ?
- <>
- <Navbar/>
- <Alarm/>
- </>
- :
- <Navigate to="/"/>
- }
- />
-
-
- <Route
- path="/challenge"
- element={
- token ?
- <>
- <Navbar/>
- <Challenge/>
- </>
- :
- <Navigate to="/"/>
- }
- />
-
-
- <Route
- path="/profile"
- element={
- token ?
- <>
- <Navbar/>
- <Profile/>
- </>
- :
- <Navigate to="/"/>
- }
- />
-
- </Routes>
-
- )
-
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/dashboard" element={withNav(<Dashboard />, token)} />
+      <Route path="/alarm" element={withNav(<Alarm />, token)} />
+      <Route path="/challenge" element={withNav(<Challenge />, token)} />
+      <Route path="/profile" element={withNav(<Profile />, token)} />
+      <Route path="/sleep" element={withNav(<Sleep />, token)} />
+      <Route path="/habit" element={withNav(<Habit />, token)} />
+      <Route path="/difficulty" element={withNav(<Difficulty />, token)} />
+      <Route path="/recommendation" element={withNav(<Recommendation />, token)} />
+      <Route path="/behavior" element={withNav(<BehaviorAnalytics />, token)} />
+      <Route path="/reports" element={withNav(<Reports />, token)} />
+      <Route path="/verify/:alarmId" element={token ? <Verify /> : <Navigate to="/" />} />
+    </Routes>
+  );
 }
 
 export default App;

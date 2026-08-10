@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from services.challenge_selector import select_challenge
 from services.answer_validation import validate_answer
+from services.adaptive_engine import get_effective_difficulty_label
 import random
 from typing import Optional
 
@@ -13,7 +14,6 @@ from models.performance import Performance
 from schemas.challenge import ChallengeCreate, ChallengeAnswer
 from scripts.challenge_engine import ChallengeEngine
 from puzzle_difficulty import calculate_age, difficulty_for_age
-from routes.recommendation import calculate_next_difficulty
 from auth import verify_token
 
 router = APIRouter()
@@ -162,7 +162,7 @@ def submit_answer(
         score=challenge.points if is_correct else 0,
         success=is_correct,
         completion_time=10,
-)
+    )
 
     db.add(new_performance)
     db.commit()
@@ -187,10 +187,13 @@ def start_challenge(
 
     user = current_user
 
-    difficulty = calculate_next_difficulty(
-        user.id,
-        db
-    )
+    # Reconciled: uses the same earned, streak-based difficulty as
+    # practice challenges and live alarm verification, instead of the
+    # separate hybrid age+accuracy function that used to live in
+    # routes/recommendation.py (calculate_next_difficulty -- now unused,
+    # left in place but no longer called from anywhere; see that file's
+    # docstring note).
+    difficulty = get_effective_difficulty_label(db, user)
 
     age = calculate_age(user.date_of_birth)
 
