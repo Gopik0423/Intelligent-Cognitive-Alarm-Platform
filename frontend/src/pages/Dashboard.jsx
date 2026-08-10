@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { Sun, Moon, User, Heart, Feather, Zap, Flame } from "lucide-react";
+
+const TIER_ICON = {
+  Easy: Feather,
+  Medium: Zap,
+  Hard: Flame,
+};
 
 function Dashboard() {
 
@@ -45,6 +52,17 @@ function Dashboard() {
     return "Easy";
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: "Good morning", Icon: Sun };
+    if (hour < 18) return { text: "Good afternoon", Icon: Sun };
+    return { text: "Good evening", Icon: Moon };
+  };
+
+  const { text: greetingText, Icon: GreetingIcon } = getGreeting();
+  const tierLabel = difficultyLabel(difficulty.difficulty_level);
+  const TierIcon = TIER_ICON[tierLabel] || Feather;
+
   const cardStyle = {
     flex: 1,
     padding: "22px",
@@ -54,26 +72,38 @@ function Dashboard() {
 
   return (
     <div style={{ width: "80%", margin: "30px auto" }}>
-      <h1 style={{ fontSize: "28px" }}>Cognitive Alarm Dashboard</h1>
+      <h1 style={{ fontSize: "28px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <GreetingIcon size={26} color="var(--primary)" />
+        {greetingText}{user.name ? `, ${user.name}` : ""}
+      </h1>
       <hr style={{ border: "none", borderTop: "1px solid var(--border)" }} />
 
       <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
 
-        <div style={{ ...cardStyle, background: "var(--accent-blue)" }}>
-          <h3>User</h3>
+        <div className="app-card-hover" style={{ ...cardStyle, background: "var(--accent-blue)" }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <User size={18} color="var(--icon-blue)" />
+            User
+          </h3>
           <p style={{ color: "var(--text-muted)", marginBottom: "6px" }}><b style={{ color: "var(--text)" }}>Name:</b> {user.name}</p>
           <p style={{ color: "var(--text-muted)", marginBottom: "6px" }}><b style={{ color: "var(--text)" }}>Role:</b> {user.role}</p>
           <p style={{ color: "var(--text-muted)" }}><b style={{ color: "var(--text)" }}>Email:</b> {user.email}</p>
         </div>
 
-        <div style={{ ...cardStyle, background: "var(--accent-orange)" }}>
-          <h3>Habit Score</h3>
+        <div className="app-card-hover" style={{ ...cardStyle, background: "var(--accent-orange)" }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Heart size={18} color="var(--icon-orange)" />
+            Habit Score
+          </h3>
           <h1 style={{ fontSize: "40px" }}>{habitScore}%</h1>
         </div>
 
-        <div style={{ ...cardStyle, background: "var(--accent-purple)" }}>
-          <h3>Difficulty Level</h3>
-          <h1 style={{ fontSize: "40px" }}>{difficultyLabel(difficulty.difficulty_level)}</h1>
+        <div className="app-card-hover" style={{ ...cardStyle, background: "var(--accent-purple)" }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <TierIcon size={18} color="var(--icon-purple)" />
+            Difficulty Level
+          </h3>
+          <h1 style={{ fontSize: "40px" }}>{tierLabel}</h1>
           <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}><b style={{ color: "var(--text)" }}>Level:</b> {difficulty.difficulty_level ?? "-"} / 4</p>
           <p style={{ color: "var(--text-muted)", marginBottom: "4px" }}><b style={{ color: "var(--text)" }}>Correct streak:</b> {difficulty.correct_streak ?? 0}</p>
           <p style={{ color: "var(--text-muted)" }}><b style={{ color: "var(--text)" }}>Fail streak:</b> {difficulty.fail_streak ?? 0}</p>

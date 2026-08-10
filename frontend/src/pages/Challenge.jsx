@@ -62,13 +62,11 @@ function Challenge() {
 
   return (
     <div
+      className="app-card"
       style={{
         width: "700px",
         margin: "40px auto",
-        padding: "25px",
-        background: "#ffffff",
-        borderRadius: "10px",
-        boxShadow: "0px 0px 10px gray",
+        padding: "28px",
       }}
     >
 
@@ -76,13 +74,8 @@ function Challenge() {
 
       <button
         onClick={startChallenge}
-        style={{
-          padding: "10px 20px",
-          background: "#1e3a8a",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-        }}
+        className="app-btn"
+        style={{ padding: "11px 22px" }}
       >
         Start Challenge
       </button>
@@ -96,8 +89,8 @@ function Challenge() {
 
           <h3>{challenge.challenge_type}</h3>
 
-          <p>
-            <b>Question:</b> {challenge.question}
+          <p style={{ color: "var(--text-muted)", marginBottom: "14px" }}>
+            <b style={{ color: "var(--text)" }}>Question:</b> {challenge.question}
           </p>
 
           <input
@@ -105,10 +98,7 @@ function Challenge() {
             placeholder="Enter Answer"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-            }}
+            className="app-input"
           />
 
           <br />
@@ -116,13 +106,8 @@ function Challenge() {
 
           <button
             onClick={submitAnswer}
-            style={{
-              padding: "10px 20px",
-              background: "green",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
+            className="app-btn"
+            style={{ padding: "11px 22px" }}
           >
             Submit Answer
           </button>
@@ -134,7 +119,7 @@ function Challenge() {
       <br />
 
       {result && (
-        <h3 style={{ color: "blue" }}>
+        <h3 style={{ color: "var(--primary)" }}>
           {result}
         </h3>
       )}

@@ -1,19 +1,29 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-const TREND_COLOR = {
-  improving: "var(--success)",
-  declining: "var(--danger)",
-  stable: "var(--text-muted)",
+const TREND_ICON = {
+  improving: TrendingUp,
+  declining: TrendingDown,
+  stable: Minus,
 };
+
+function TrendBadge({ value }) {
+  const cls = TREND_ICON[value] ? value : "stable";
+  const Icon = TREND_ICON[value] || Minus;
+  return (
+    <span className={`trend-badge ${cls}`}>
+      <Icon size={13} />
+      {value}
+    </span>
+  );
+}
 
 function TrendRow({ label, value }) {
   return (
-    <p style={{ marginBottom: "6px" }}>
-      <b style={{ color: "var(--text)" }}>{label}:</b>{" "}
-      <span style={{ color: TREND_COLOR[value] || "var(--text)", fontWeight: 700 }}>
-        {value}
-      </span>
+    <p style={{ marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+      <b style={{ color: "var(--text)" }}>{label}:</b>
+      <TrendBadge value={value} />
     </p>
   );
 }
@@ -36,7 +46,11 @@ function BehaviorAnalytics() {
   };
 
   if (!data) {
-    return <p style={{ textAlign: "center", marginTop: "40px", color: "var(--text-muted)" }}>Loading...</p>;
+    return (
+      <div className="spinner-wrap">
+        <div className="spinner" />
+      </div>
+    );
   }
 
   if (data.status === "not_enough_data") {
