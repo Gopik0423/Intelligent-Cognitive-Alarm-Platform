@@ -1,30 +1,60 @@
+# docker-compose.yml
+#
+# Orchestrates the actual product: Postgres + FastAPI backend + React
+# frontend (served via nginx). Replaces the previous docker-compose.yml,
+# which built and ran an unrelated Node.js prototype instead.
+
 services:
+
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-alarm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-alarm_password}
+      POSTGRES_DB: ${POSTGRES_DB:-alarm_platform}
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./sql:/docker-entrypoint-initdb.d
     ports:
-      - "5433:5432"
+      - "5432:5432"
+    healthcheck:
+      # Backend must not start until Postgres is actually ready to accept
+      # connections, not just "container started" -- depends_on alone
+      # only guarantees the latter.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alarm_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  api:
-    build: .
+  backend:
+    build:
+      context: ./Backend
     restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: alarm_user
-      DB_PASSWORD: alarm_password
-      DB_NAME: alarm_platform
-      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-alarm_user}:${POSTGRES_PASSWORD:-alarm_password}@db:5432/${POSTGRES_DB:-alarm_platform}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env -- see .env.example}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
     ports:
-      - "4001:4000"
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # This must be a URL reachable from the USER'S BROWSER, not the
+        # Docker network -- for local docker-compose testing that's the
+        # backend's host-mapped port. For a real cloud deployment, set
+        # this to the backend's actual public URL in your .env file.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
 
 volumes:
   db-data:

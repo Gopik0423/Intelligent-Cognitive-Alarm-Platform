@@ -97,11 +97,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+import os as _os
+
+_allowed_origins_env = _os.environ.get("ALLOWED_ORIGINS", "")
+_extra_origins = [o.strip() for o in _allowed_origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        *_extra_origins,
     ],
     # Vite uses the next free port when 5173 is occupied.  Permit only local
     # development origins so signup/login keep working on 5174, 5175, etc.
