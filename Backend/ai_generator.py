@@ -66,6 +66,10 @@ def generate_challenge(challenge_type: str, difficulty: str, age: int = None):
             return {"question": "What is the next number in the sequence: 2, 4, 6, 8, ?", "correct_answer": "10", "difficulty": difficulty, "points": 5}
         if t == "riddle":
             return {"question": "What has keys but can't open locks?", "correct_answer": "piano", "difficulty": difficulty, "points": 5}
+        if t == "sequence":
+            return {"question": "Complete the sequence: 3, 6, 12, 24, ?", "correct_answer": "48", "difficulty": difficulty, "points": 6}
+        if t == "visual":
+            return {"question": "Which shape has three sides: circle, triangle, or square?", "correct_answer": "triangle", "difficulty": difficulty, "points": 5}
         return _fallback_math(difficulty)
 
     # Use Gemini model when available. Keep the prompt concise and expect JSON output.

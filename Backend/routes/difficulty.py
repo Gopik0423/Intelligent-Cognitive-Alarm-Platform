@@ -3,20 +3,18 @@ from sqlalchemy.orm import Session
 
 from database.dependencies import get_db
 from models.difficulty import DifficultyLevel
+from models.user import User
 from schemas.difficulty import DifficultyResponse, DifficultyUpdateRequest
-from services.adaptive_engine import apply_result, set_level
+from services.adaptive_engine import apply_result, set_level, get_or_create_difficulty_record
 
 router = APIRouter(prefix="/difficulty", tags=["Difficulty"])
 
 
 def _get_or_create(db: Session, user_id: int) -> DifficultyLevel:
-    record = db.query(DifficultyLevel).filter(DifficultyLevel.user_id == user_id).first()
-    if not record:
-        record = DifficultyLevel(user_id=user_id)
-        db.add(record)
-        db.commit()
-        db.refresh(record)
-    return record
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return get_or_create_difficulty_record(db, user)
 
 
 @router.get("/get", response_model=DifficultyResponse)

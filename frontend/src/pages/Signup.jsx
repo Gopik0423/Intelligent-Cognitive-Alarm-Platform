@@ -13,6 +13,8 @@ function Signup() {
   password: "",
   role: "user",
   date_of_birth: "",
+  gender: "",
+  timezone: "Asia/Kolkata",
 });
 
   const [loading, setLoading] = useState(false);
@@ -32,10 +34,12 @@ function Signup() {
     setMessage("");
 
     try {
-      await API.post("/register", formData);
+      const response = await API.post("/register", formData);
+      if (response.data.message !== "User registered successfully") {
+        throw new Error(response.data.message || "Registration failed");
+      }
 
-      alert("Registration Successful");
-
+      alert("Registration successful. Please sign in with your new account.");
       navigate("/");
     } catch (err) {
       console.log(err);
@@ -43,7 +47,7 @@ function Signup() {
       if (err.response) {
         setMessage(err.response.data.detail || "Registration Failed");
       } else {
-        setMessage("Unable to connect to server");
+        setMessage(err.message || "Unable to connect to server");
       }
     }
 
@@ -82,6 +86,25 @@ function Signup() {
             name="name"
             placeholder="Full Name"
             value={formData.name}
+            onChange={handleChange}
+            required
+            className="app-input"
+            style={{ marginBottom: "14px" }}
+          />
+
+          <select name="gender" value={formData.gender} onChange={handleChange} required className="app-input" style={{ marginBottom: "14px" }}>
+            <option value="" disabled>Gender</option>
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+
+          <input
+            type="text"
+            name="timezone"
+            placeholder="Timezone (e.g. Asia/Kolkata)"
+            value={formData.timezone}
             onChange={handleChange}
             required
             className="app-input"

@@ -8,6 +8,7 @@ from models.alarm import Alarm
 from models.user import User
 from models.challenge import Challenge
 from models.verification import WakeupVerification
+from models.performance import Performance
 from auth import verify_token
 from ai_generator import generate_challenge
 from puzzle_difficulty import calculate_age
@@ -119,6 +120,16 @@ def submit_answer(verification_id: int, answer: str, db: Session = Depends(get_d
     # effect on their real alarm at all.
     difficulty_record = get_or_create_difficulty_record(db, current_user)
     apply_result(difficulty_record, is_correct=bool(is_correct))
+    db.add(Performance(
+        user_id=current_user.id,
+        challenge_type=challenge.challenge_type if challenge else verification.challenge_type,
+        difficulty=challenge.difficulty if challenge else get_effective_difficulty_label(db, current_user),
+        attempts=1,
+        accuracy=1.0 if is_correct else 0.0,
+        score=challenge.points if is_correct and challenge else 0,
+        success=bool(is_correct),
+        completion_time=max(0, (datetime.utcnow() - verification.started_at).total_seconds()),
+    ))
 
     if is_correct:
         verification.consecutive_correct_count += 1

@@ -52,7 +52,7 @@ def _recent_challenge_ids(db: Session, user_id: int) -> set[int]:
     return ids
 
 
-def select_challenge(db: Session, user_id: int, challenge_type: str) -> Challenge | None:
+def select_challenge(db: Session, user_id: int, challenge_type: str, difficulty_label: str | None = None) -> Challenge | None:
     """
     Select a challenge for this user and type, adapted to their difficulty
     level and avoiding recently-seen questions where possible.
@@ -64,7 +64,7 @@ def select_challenge(db: Session, user_id: int, challenge_type: str) -> Challeng
         .filter(DifficultyLevel.user_id == user_id)
         .first()
     )
-    target_difficulty = map_level_to_difficulty(
+    target_difficulty = difficulty_label or map_level_to_difficulty(
         difficulty_record.difficulty_level if difficulty_record else 1
     )
 

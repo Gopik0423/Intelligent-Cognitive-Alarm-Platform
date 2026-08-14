@@ -103,6 +103,9 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
+    # Vite uses the next free port when 5173 is occupied.  Permit only local
+    # development origins so signup/login keep working on 5174, 5175, etc.
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

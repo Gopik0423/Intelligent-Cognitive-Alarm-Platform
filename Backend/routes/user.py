@@ -1,12 +1,13 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm
 
 from database.db import SessionLocal
 from models.user import User
+from models.profile import Profile
 from schemas.user import UserCreate
 from auth import create_access_token, verify_token, require_role
 
@@ -36,7 +37,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
 
     if existing_user:
-        return {"message": "Email already registered"}
+        raise HTTPException(status_code=409, detail="An account already exists for this email. Please sign in or use another email.")
 
     # Add this block here
     if user.role == "admin":
@@ -55,6 +56,16 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     )
 
     db.add(new_user)
+    db.flush()
+    # Profile details are collected during account creation, so users do not
+    # have to re-enter their name and age on their first Profile visit.
+    db.add(Profile(
+        user_id=new_user.id,
+        full_name=new_user.name,
+        age=calculate_age(new_user.date_of_birth),
+        gender=user.gender,
+        timezone=user.timezone,
+    ))
     db.commit()
     db.refresh(new_user)
 
@@ -101,7 +112,7 @@ def profile(payload=Depends(verify_token)):
 
 @router.get("/user")
 def user_dashboard(
-    payload=Depends(require_role("user")),
+    payload=Depends(verify_token),
     db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(User.id == payload["user_id"]).first()
@@ -110,7 +121,9 @@ def user_dashboard(
         "id": user.id,
         "name": user.name,
         "email": user.email,
-        "role": user.role
+        "role": user.role,
+        "date_of_birth": user.date_of_birth,
+        "age": calculate_age(user.date_of_birth),
     }
 
 

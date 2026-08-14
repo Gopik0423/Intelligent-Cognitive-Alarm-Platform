@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
-import { Moon, AlarmClock, Zap, Heart } from "lucide-react";
+import { Moon, AlarmClock, Zap, Heart, Brain } from "lucide-react";
 
 function Section({ title, tips, color, Icon, iconColor }) {
   return (
@@ -59,6 +59,15 @@ function Recommendation() {
       <Section title="Wake-Up" tips={data.wake_up} color="var(--accent-orange)" Icon={AlarmClock} iconColor="var(--icon-orange)" />
       <Section title="Productivity" tips={data.productivity} color="var(--accent-green)" Icon={Zap} iconColor="var(--icon-green)" />
       <Section title="Habit" tips={data.habit} color="var(--accent-purple)" Icon={Heart} iconColor="var(--icon-purple)" />
+      {data.alarm_intelligence && (
+        <Section
+          title={`Alarm Intelligence · ${data.alarm_intelligence.current_difficulty}`}
+          tips={data.alarm_intelligence.recommendations.map((item) => item.reason)}
+          color="var(--accent-blue)"
+          Icon={Brain}
+          iconColor="var(--icon-blue)"
+        />
+      )}
     </div>
   );
 }

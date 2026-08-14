@@ -9,6 +9,8 @@ class UserCreate(BaseModel):
     password: str
     role: str
     date_of_birth: date
+    gender: str = "Not specified"
+    timezone: str = "Asia/Kolkata"
 
     @model_validator(mode="after")
     def validate_minimum_age(self):

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AlarmWatcher from "./components/AlarmWatcher";
 import Login from "./pages/Login";
@@ -30,11 +30,13 @@ function withNav(element, token) {
 }
 
 function App() {
-
+  // Re-render when navigation changes so protected routes see a token that
+  // was just saved by Login or Signup.
+  const { pathname } = useLocation();
   const token = localStorage.getItem("token");
 
   return (
-    <Routes>
+    <Routes key={pathname}>
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/dashboard" element={withNav(<Dashboard />, token)} />

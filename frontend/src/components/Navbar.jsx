@@ -38,7 +38,10 @@ function Navbar() {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">Cognitive Alarm</div>
+      <div className="sidebar-brand">
+        <div className="brand-mark"><Sparkles size={18} /></div>
+        <div className="sidebar-logo">Cognitive Alarm<span>SMART WAKEUP</span></div>
+      </div>
 
       <nav className="sidebar-links">
         {links.map(({ to, label, Icon }) => (

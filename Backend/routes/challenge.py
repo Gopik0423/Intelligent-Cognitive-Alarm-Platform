@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from services.challenge_selector import select_challenge
 from services.answer_validation import validate_answer
-from services.adaptive_engine import get_effective_difficulty_label
+from services.adaptive_engine import get_effective_difficulty_label, get_or_create_difficulty_record, apply_result
 import random
 from typing import Optional
 
@@ -86,11 +86,15 @@ def get_random_challenge(
     db: Session = Depends(get_db),
 ):
     if user_id is not None:
-        selected = select_challenge(db, user_id=user_id, challenge_type=challenge_type)
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        difficulty = get_effective_difficulty_label(db, user)
+        selected = select_challenge(db, user_id=user_id, challenge_type=challenge_type, difficulty_label=difficulty)
         if selected is not None:
             return selected
 
-        difficulty, age = get_user_puzzle_settings(user_id, db)
+        _, age = get_user_puzzle_settings(user_id, db)
 
         challenge_data = generate_challenge(
             challenge_type,
@@ -165,6 +169,7 @@ def submit_answer(
     )
 
     db.add(new_performance)
+    apply_result(get_or_create_difficulty_record(db, current_user), is_correct=is_correct)
     db.commit()
 
     if is_correct:

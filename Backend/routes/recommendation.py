@@ -9,7 +9,8 @@ from models.performance import Performance
 from models.habit import Habit
 from models.habit_score import HabitScore
 from models.user import User
-from puzzle_difficulty import difficulty_for_age
+from services.adaptive_engine import get_or_create_difficulty_record
+from services.alarm_intelligence import build_alarm_intelligence
 router = APIRouter(
     prefix="/recommendation",
     tags=["Recommendation"]
@@ -166,6 +167,21 @@ def get_habit_recommendations(user_id: int, db: Session) -> list[str]:
     return tips
 
 
+def get_alarm_intelligence(user_id: int, db: Session) -> dict:
+    """Build a recommendation only from persisted performance and behavior data."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return {"validated": False, "recommendations": [], "message": "User not found"}
+    performances = (
+        db.query(Performance)
+        .filter(Performance.user_id == user_id)
+        .order_by(Performance.completed_at.asc())
+        .limit(30)
+        .all()
+    )
+    return build_alarm_intelligence(performances, get_or_create_difficulty_record(db, user))
+
+
 @router.get("/{user_id}")
 def get_recommendation(
     user_id: int,
@@ -213,13 +229,21 @@ def get_full_recommendation(
     user_id: int,
     db: Session = Depends(get_db)
 ):
+    intelligence = get_alarm_intelligence(user_id, db)
     return {
         "user_id": user_id,
         "sleep": get_sleep_recommendations(user_id, db),
         "wake_up": get_wakeup_recommendations(user_id, db),
         "productivity": get_productivity_recommendations(user_id, db),
         "habit": get_habit_recommendations(user_id, db),
+        "alarm_intelligence": intelligence,
     }
+
+
+@router.get("/{user_id}/alarm-intelligence")
+def get_validated_alarm_intelligence(user_id: int, db: Session = Depends(get_db)):
+    """Explainable, behavior-aware alarm guidance for the client or an admin review."""
+    return get_alarm_intelligence(user_id, db)
 
 
 # NOTE (difficulty-system reconciliation): this function is no longer
@@ -243,7 +267,9 @@ def calculate_next_difficulty(user_id: int, db: Session) -> str:
     if not user:
         return "Easy"
 
-    # Base difficulty from age
+    # Base difficulty from age.  Kept only for backwards compatibility;
+    # the live engine uses services.adaptive_engine instead.
+    from puzzle_difficulty import difficulty_for_age
     base = difficulty_for_age(user.date_of_birth)
 
     performances = (
