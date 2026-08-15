@@ -16,7 +16,10 @@ def test_02_admin_route_without_token_rejected():
 
 
 def test_03_invalid_token_rejected():
-    res = client.get("/profile", headers={"Authorization": "Bearer this.is.not.a.valid.token"})
+    res = client.get(
+        "/profile",
+        headers={"Authorization": "Bearer this.is.not.a.valid.token"}
+    )
     assert res.status_code == 401
 
 
@@ -26,14 +29,23 @@ def test_04_tampered_token_rejected():
         "eyJzdWIiOiJoYWNrZXJAdGVzdC5jb20iLCJyb2xlIjoiQWRtaW4ifQ."
         "invalidsignaturepart"
     )
-    res = client.get("/profile", headers={"Authorization": f"Bearer {fake_token}"})
+
+    res = client.get(
+        "/profile",
+        headers={"Authorization": f"Bearer {fake_token}"}
+    )
+
     assert res.status_code == 401
 
 
 def test_05_user_cannot_access_admin_dashboard():
-    # Register + login as a normal User, then try hitting Admin-only route
+    # Register + login as a normal User,
+    # then try accessing the Admin-only route.
+
     import uuid
+
     email = f"sec_{uuid.uuid4().hex[:8]}@test.com"
+
     client.post(
         "/register",
         json={
@@ -44,25 +56,46 @@ def test_05_user_cannot_access_admin_dashboard():
             "date_of_birth": "1999-05-05",
         },
     )
-    login_res = client.post("/login", data={"username": email, "password": "Pass1234"})
+
+    login_res = client.post(
+        "/login",
+        data={
+            "username": email,
+            "password": "Pass1234"
+        }
+    )
+
     token = login_res.json()["access_token"]
 
-    res = client.get("/admin", headers={"Authorization": f"Bearer {token}"})
+    res = client.get(
+        "/admin",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
     assert res.status_code == 403
 
 
 def test_06_sql_injection_attempt_in_login():
     res = client.post(
         "/login",
-        data={"username": "' OR '1'='1", "password": "' OR '1'='1"},
+        data={
+            "username": "' OR '1'='1",
+            "password": "' OR '1'='1"
+        },
     )
-    # Should NOT authenticate; should be treated as invalid user, not crash the server
+
+    # SQL injection should not authenticate the user.
+    # The request should be handled safely.
     assert res.status_code == 200
-    assert res.json().get("message") in ("User not found", "Invalid password")
+    assert res.json().get("message") in (
+        "User not found",
+        "Invalid password"
+    )
 
 
 def test_07_duplicate_admin_registration_blocked():
     import uuid
+
     email1 = f"admin_{uuid.uuid4().hex[:8]}@test.com"
     email2 = f"admin_{uuid.uuid4().hex[:8]}@test.com"
 
@@ -76,6 +109,7 @@ def test_07_duplicate_admin_registration_blocked():
             "date_of_birth": "1990-01-01",
         },
     )
+
     res2 = client.post(
         "/register",
         json={
@@ -86,14 +120,25 @@ def test_07_duplicate_admin_registration_blocked():
             "date_of_birth": "1991-01-01",
         },
     )
-    # Second admin registration should be blocked if an Admin already exists
-    messages = [res1.json().get("message"), res2.json().get("message")]
-    assert "Admin already exists" in messages or "User registered successfully" in messages
+
+    # Second admin registration should be blocked
+    # if an Admin already exists.
+    messages = [
+        res1.json().get("message"),
+        res2.json().get("message")
+    ]
+
+    assert (
+        "Admin already exists" in messages
+        or "User registered successfully" in messages
+    )
 
 
 def test_08_duplicate_email_registration_blocked():
     import uuid
+
     email = f"dup_{uuid.uuid4().hex[:8]}@test.com"
+
     payload = {
         "name": "Dup Test",
         "email": email,
@@ -101,6 +146,25 @@ def test_08_duplicate_email_registration_blocked():
         "role": "User",
         "date_of_birth": "1995-01-01",
     }
-    client.post("/register", json=payload)
-    res2 = client.post("/register", json=payload)
-    assert res2.json().get("message") == "Email already registered"
+
+    # First registration should succeed.
+    res1 = client.post(
+        "/register",
+        json=payload
+    )
+
+    assert res1.status_code == 200
+    assert res1.json().get("message") == "User registered successfully"
+
+    # Second registration with the same email should be rejected.
+    res2 = client.post(
+        "/register",
+        json=payload
+    )
+
+    assert res2.status_code == 409
+    assert (
+        res2.json().get("detail")
+        == "An account already exists for this email. "
+           "Please sign in or use another email."
+    )
